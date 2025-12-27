@@ -1,0 +1,1609 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Editor de Informe – A4 + PDF (sin cortes)</title>
+
+<style>
+  :root{
+    --page-bg:#ffffff;
+    --ui-bg:#f2f2f2;
+
+    --border:#000000;
+    --header-bg:#ffffff;
+    --header-text:#000000;
+
+    --section-bg:#e6e6e6;
+    --section-text:#000000;
+
+    --body-text:#000000;
+  }
+
+  @page{ size:A4; margin:0; }
+  html,body{height:100%}
+  body{
+    margin:0;
+    font-family: Arial, Helvetica, sans-serif;
+    background: var(--ui-bg);
+    color: var(--body-text);
+  }
+
+  /* Topbar */
+  .topbar{
+    position:sticky; top:0; z-index:20;
+    background:#fff;
+    border-bottom:1px solid #cfcfcf;
+    padding:10px;
+  }
+  .topbar .row{
+    max-width:1200px;
+    margin:0 auto;
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+    justify-content:space-between;
+  }
+  .group{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
+  button, select, input[type="color"], input[type="text"]{
+    border:1px solid #000;
+    background:#fff;
+    padding:8px 10px;
+    font-weight:800;
+    cursor:pointer;
+  }
+  button.primary{ background:#e6e6e6; }
+  button.danger{ background:#ffe8e8; }
+  button:disabled{
+    opacity:.5;
+    cursor:not-allowed;
+  }
+
+  /* Workspace */
+  .workspace{
+    max-width:1200px;
+    margin:14px auto;
+    display:grid;
+    grid-template-columns: 330px 1fr;
+    gap:14px;
+    padding:0 10px 20px;
+  }
+  .panel{
+    background:#fff;
+    border:1px solid #ccc;
+    padding:12px;
+  }
+  .panel h3{ margin:0 0 10px 0; font-size:14px; }
+  .panel .row{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:10px;
+    margin-top:10px;
+  }
+  .panel .row .full{ grid-column: 1 / -1; }
+  .panel label{ font-size:12px; font-weight:900; display:block; margin-bottom:6px; }
+  .panel input[type="text"]{
+    width:100%;
+    box-sizing:border-box;
+    font-weight:700;
+  }
+  .panel .note{
+    border-left:3px solid #999;
+    padding:8px 10px;
+    margin-top:10px;
+    background:#fafafa;
+    font-size:12px;
+    line-height:1.35;
+  }
+
+  .tplbox{
+    border:1px solid #cfcfcf;
+    padding:10px;
+    background:#fafafa;
+    margin-bottom:12px;
+  }
+  .tplbox h3{ margin:0 0 10px 0; font-size:14px; }
+  .tplrow{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:10px;
+  }
+  .tplrow .full{ grid-column:1 / -1; }
+  .tplmeta{
+    margin-top:8px;
+    font-size:12px;
+    color:#333;
+    line-height:1.35;
+  }
+  .tplactions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:10px;
+  }
+
+  /* TAG box */
+  .tagbox{
+    border:1px solid #cfcfcf;
+    padding:10px;
+    background:#fafafa;
+    margin-bottom:12px;
+  }
+  .tagbox h3{ margin:0 0 10px 0; font-size:14px; }
+  .tagrow{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:10px;
+  }
+  .tagrow .full{ grid-column:1 / -1; }
+  .tagactions{
+    display:flex;
+    gap:8px;
+    flex-wrap:wrap;
+    margin-top:10px;
+  }
+  .tagstatus{
+    margin-top:8px;
+    font-size:12px;
+    color:#333;
+    line-height:1.35;
+  }
+
+  /* A4 page (visual) */
+  .page{
+    width:210mm;
+    min-height:297mm;
+    margin:0 auto 14px auto;
+    background: var(--page-bg);
+    padding:10mm;
+    border:1px solid #ccc;
+    box-shadow:0 6px 18px rgba(0,0,0,.12);
+    box-sizing:border-box;
+  }
+
+  /* export mode */
+  body.exporting{
+    background:#fff !important;
+  }
+  body.exporting .page{
+    margin:0 !important;
+    box-shadow:none !important;
+    border:none !important;
+  }
+  body.exporting .actions{
+    display:none !important;
+  }
+
+  /* Header (editable) */
+  .doc-header{
+    border:2px solid var(--border);
+    background: var(--header-bg);
+    color: var(--header-text);
+    padding:10px;
+    margin-bottom:12px;
+    display:flex;
+    gap:12px;
+    align-items:center;
+    break-inside:avoid;
+    page-break-inside:avoid;
+  }
+  .logo{
+    width:190px;
+    height:140px;
+    border:2px solid var(--border);
+    background:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    overflow:hidden;
+    flex: 0 0 auto;
+  }
+  .logo img{
+    width:100%;
+    height:100%;
+    object-fit:contain;
+    display:block;
+  }
+  .header-text{
+    flex:1 1 auto;
+    min-width:0;
+  }
+  .header-title{
+    font-size:18px;
+    font-weight:900;
+    margin:0 0 4px 0;
+    line-height:1.15;
+    word-break:break-word;
+  }
+  .header-subtitle{
+    font-size:12px;
+    font-weight:800;
+    margin:0;
+    opacity:.95;
+    word-break:break-word;
+  }
+
+  .header-meta{
+    flex: 0 0 auto;
+    text-align:right;
+    min-width:190px;
+    font-size:11px;
+    font-weight:900;
+    line-height:1.2;
+    word-break:break-word;
+  }
+  .header-meta .muted{
+    opacity:.85;
+    font-weight:800;
+  }
+
+  /* Fields */
+  .field{
+    border:2px solid var(--border);
+    margin-bottom:12px;
+    background:#fff;
+    break-inside:avoid;
+    page-break-inside:avoid;
+  }
+  .field-head{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:8px;
+    padding:6px;
+    background: var(--section-bg);
+    color: var(--section-text);
+    border-bottom:2px solid var(--border);
+  }
+  .title{
+    font-weight:900;
+    font-size:14px;
+    word-break:break-word;
+    flex:1 1 auto;
+    min-width:0;
+  }
+  .actions{
+    display:flex;
+    gap:6px;
+    align-items:center;
+    flex: 0 0 auto;
+  }
+  .iconbtn{
+    border:1px solid var(--border);
+    background:#fff;
+    padding:2px 7px;
+    font-weight:900;
+    cursor:pointer;
+    line-height:1;
+  }
+
+  .field-body{ padding:8px; }
+
+  /* Input styles */
+  .textline input[type="text"]{
+    width:100%;
+    border:2px solid var(--border);
+    padding:8px;
+    font-size:14px;
+    font-weight:500;
+    box-sizing:border-box;
+    color: var(--body-text);
+  }
+  textarea{
+    width:100%;
+    min-height:70px;
+    resize:none;
+    border:2px solid var(--border);
+    padding:8px;
+    font-size:14px;
+    line-height:1.25;
+    overflow:hidden;
+    box-sizing:border-box;
+    font-family: Arial, Helvetica, sans-serif;
+    color: var(--body-text);
+  }
+  .opts{
+    display:flex;
+    flex-wrap:wrap;
+    gap:20px;
+    margin-bottom:8px;
+    font-size:16px;
+    color: var(--body-text);
+  }
+  .opts label{ white-space:nowrap; }
+
+  /* Photos */
+  .photos{
+    display:grid;
+    grid-template-columns:repeat(4, 160px);
+    gap:10px;
+    margin-top:10px;
+  }
+  .photos img{
+    width:160px;
+    height:200px;
+    object-fit:contain;
+    border:2px solid var(--border);
+    background:#fff;
+    display:block;
+  }
+
+  /* Print */
+  @media print{
+    .topbar,.panel{display:none !important;}
+    .workspace{display:block; padding:0;}
+    .page{margin:0; border:none; box-shadow:none;}
+    body{background:#fff;}
+    .actions{display:none !important;}
+  }
+
+  @media (max-width:1080px){
+    .workspace{grid-template-columns:1fr;}
+  }
+</style>
+</head>
+
+<body>
+
+<div class="topbar">
+  <div class="row">
+    <div class="group">
+      <select id="newType">
+        <option value="text">Texto</option>
+        <option value="radio">Selección</option>
+        <option value="photos">Imagenes</option>
+      </select>
+      <button class="primary" type="button" onclick="addField()">Añadir</button>
+    </div>
+
+    <div class="group">
+      <button type="button" onclick="saveTemplatePrompt()">Guardar como plantilla</button>
+      <button type="button" onclick="updateCurrentTemplate()" id="btnUpdateTpl" disabled>Actualizar plantilla</button>
+      <button class="danger" type="button" onclick="deleteCurrentTemplate()" id="btnDeleteTpl" disabled>Borrar plantilla</button>
+
+      <span style="width:10px"></span>
+
+      <button type="button" onclick="saveLayout()">Guardar JSON</button>
+      <button type="button" onclick="loadLayout()">Cargar JSON</button>
+      <button class="primary" type="button" onclick="exportPDFNoCut()">Descargar PDF A4</button>
+    </div>
+  </div>
+</div>
+
+<div class="workspace">
+  <div class="panel">
+    <div class="tplbox">
+      <h3>Plantillas (persistente)</h3>
+
+      <div class="tplrow">
+        <div class="full">
+          <label>Categoría</label>
+          <select id="tplCategory" onchange="onCategoryChange()">
+            <option value="">—</option>
+          </select>
+        </div>
+
+        <div class="full">
+          <label>Formulario</label>
+          <select id="tplForm" onchange="onTemplateChange()">
+            <option value="">—</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="tplactions">
+        <button type="button" onclick="newBlankForm()">Nuevo (en blanco)</button>
+        <button type="button" onclick="duplicateCurrentToNewTemplate()">Duplicar como nueva plantilla</button>
+      </div>
+
+      <div class="tplmeta" id="tplMeta"></div>
+    </div>
+
+    <div class="tagbox">
+      <h3>TAG / Código</h3>
+
+      <div class="tagrow">
+        <div class="full">
+          <label>Código leído (TAG)</label>
+          <input id="tagInput" type="text" value="" placeholder="Pulsa 'Leer TAG' (Web NFC) o escribe el código / usa lector teclado">
+        </div>
+      </div>
+
+      <div class="tagactions">
+        <button type="button" onclick="focusTagReader('save')">Leer TAG para Guardar</button>
+        <button type="button" onclick="focusTagReader('goto')">Leer TAG para Ir</button>
+        <button class="primary" type="button" onclick="gotoByTag()">Ir por código</button>
+        <button type="button" onclick="stopWebNfcScan()" id="btnStopNfc" disabled>Parar NFC</button>
+      </div>
+
+      <div class="tagstatus" id="tagStatus"></div>
+
+      <div class="note">
+        <b>Tu caso (móvil):</b> si se abre una ventana del sistema mostrando el código pero NO se escribe en el HTML, eso NO es un lector “teclado”.
+        Para que se escriba automáticamente en el HTML necesitas <b>Web NFC</b> (Chrome Android) y abrir la página en <b>HTTPS</b> (o localhost).
+        Con los botones <b>Leer TAG</b> de arriba, el código se volcará al campo y además al último campo del formulario que hayas tocado.
+      </div>
+    </div>
+
+    <h3>Apariencia / Cabecera</h3>
+
+    <div class="row">
+      <div class="full">
+        <label>Título</label>
+        <input id="hdrTitle" type="text" value="INSPECCIÓN ESPECTÁCULOS – BOMBEROS" oninput="applyHeaderText()">
+      </div>
+
+      <div class="full">
+        <label>Subtítulo</label>
+        <input id="hdrSubtitle" type="text" value="Informe editable con exportación PDF A4 (sin cortes de campos)" oninput="applyHeaderText()">
+      </div>
+
+      <div>
+        <label>Color borde</label>
+        <input type="color" value="#000000" oninput="setVar('--border', this.value)">
+      </div>
+      <div>
+        <label>Fondo cabecera</label>
+        <input type="color" value="#ffffff" oninput="setVar('--header-bg', this.value)">
+      </div>
+
+      <div>
+        <label>Texto cabecera</label>
+        <input type="color" value="#000000" oninput="setVar('--header-text', this.value)">
+      </div>
+      <div>
+        <label>Fondo títulos</label>
+        <input type="color" value="#e6e6e6" oninput="setVar('--section-bg', this.value)">
+      </div>
+
+      <div>
+        <label>Texto títulos</label>
+        <input type="color" value="#000000" oninput="setVar('--section-text', this.value)">
+      </div>
+      <div>
+        <label>Fondo página</label>
+        <input type="color" value="#ffffff" oninput="setVar('--page-bg', this.value)">
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div id="capture" class="page">
+
+      <!-- Cabecera editable -->
+      <div id="docHeader" class="doc-header">
+        <div class="logo" id="logoBox"></div>
+        <div class="header-text">
+          <div id="docTitle" class="header-title">INSPECCIÓN ESPECTÁCULOS – BOMBEROS</div>
+          <div id="docSubtitle" class="header-subtitle">Informe editable con exportación PDF A4 (sin cortes de campos)</div>
+        </div>
+        <div class="header-meta">
+          <div class="muted">Inspeccionado</div>
+          <div id="lastEdited">—</div>
+        </div>
+      </div>
+
+      <!-- Campos iniciales -->
+      <div class="field" data-type="text" data-title="TEXTO">
+        <div class="field-head">
+          <div class="title" ondblclick="editTitle(this)">TEXTO</div>
+          <div class="actions">
+            <button class="iconbtn" title="Subir" onclick="moveUp(this)">↑</button>
+            <button class="iconbtn" title="Bajar" onclick="moveDown(this)">↓</button>
+            <button class="iconbtn" title="Borrar" onclick="removeField(this)">✕</button>
+          </div>
+        </div>
+        <div class="field-body textline">
+          <input type="text" value="">
+        </div>
+      </div>
+
+      <div class="field" data-type="radio" data-title="SELECCIÓN" data-config='{"options":["Bien","Mal","No dispone"]}'>
+        <div class="field-head">
+          <div class="title" ondblclick="editTitle(this)">SELECCIÓN</div>
+          <div class="actions">
+            <button class="iconbtn" onclick="moveUp(this)">↑</button>
+            <button class="iconbtn" onclick="moveDown(this)">↓</button>
+            <button class="iconbtn" onclick="removeField(this)">✕</button>
+          </div>
+        </div>
+        <div class="field-body" ondblclick="editRadioOptions(this)">
+          <div class="opts">
+            <label><input type="radio" name="r0"> Bien</label>
+            <label><input type="radio" name="r0"> Mal</label>
+            <label><input type="radio" name="r0"> No dispone</label>
+          </div>
+          <textarea class="autogrow" placeholder="Observaciones"></textarea>
+        </div>
+      </div>
+
+      <div class="field" data-type="photos" data-title="IMAGENES">
+        <div class="field-head">
+          <div class="title" ondblclick="editTitle(this)">IMAGENES</div>
+          <div class="actions">
+            <button class="iconbtn" onclick="moveUp(this)">↑</button>
+            <button class="iconbtn" onclick="moveDown(this)">↓</button>
+            <button class="iconbtn" onclick="removeField(this)">✕</button>
+          </div>
+        </div>
+        <div class="field-body">
+          <input type="file" multiple accept="image/*" onchange="previewImages(this)">
+          <div class="photos"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- libs -->
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+
+<script>
+  /* ===== LOGO FIJO (SIEMPRE ESTE) ===== */
+  const FIXED_LOGO_URL = 'https://i.ibb.co/BK6jvxPG/image.png';
+
+  let lastEditedISO = null;
+
+  function fmtLastEdited(iso){
+    if(!iso) return '—';
+    try{ return new Date(iso).toLocaleString('es-ES'); }catch(e){ return String(iso); }
+  }
+  function updateLastEditedUI(){
+    const el = document.getElementById('lastEdited');
+    if(el) el.textContent = fmtLastEdited(lastEditedISO);
+  }
+  function nowISO(){ return new Date().toISOString(); }
+  function touchEdited(){
+    lastEditedISO = nowISO();
+    updateLastEditedUI();
+  }
+
+  function applyFixedLogo(){
+    const logoBox = document.getElementById('logoBox');
+    if(!logoBox) return;
+    logoBox.innerHTML = '';
+    const img = document.createElement('img');
+    img.src = FIXED_LOGO_URL;
+    img.alt = 'Logo';
+    logoBox.appendChild(img);
+    logoBox.dataset.logo = FIXED_LOGO_URL;
+  }
+
+  /* ===== helpers ===== */
+  function setVar(name, value){
+    document.documentElement.style.setProperty(name, value);
+  }
+  function escapeHTML(str){
+    return String(str).replace(/[&<>"']/g, m=>({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[m]));
+  }
+  function escapeAttr(str){
+    return escapeHTML(str).replace(/"/g,'&quot;');
+  }
+  function safeJSON(s){ try{ return JSON.parse(s || '{}'); }catch(e){ return {}; } }
+  function genId(){
+    if(window.crypto && typeof window.crypto.randomUUID === 'function') return window.crypto.randomUUID();
+    return 'tpl_' + Math.random().toString(16).slice(2) + '_' + Date.now().toString(16);
+  }
+  function normalizeCode(code){ return String(code || '').trim(); }
+  function normalizeCategory(cat){ return String(cat || '').trim(); }
+  function normalizeName(name){ return String(name || '').trim(); }
+
+  /* ===== TAG / NFC ===== */
+  let tagReadMode = null; // 'save' | 'goto' | null
+
+  function setTagStatus(html){
+    const el = document.getElementById('tagStatus');
+    if(el) el.innerHTML = html || '';
+  }
+
+  function gotoByTag(){
+    const code = normalizeCode(document.getElementById('tagInput')?.value || '');
+    if(!code){ alert('No hay código/TAG.'); return; }
+    gotoByCode(code);
+  }
+
+  /* ===== Autofoco para lectores NFC tipo "teclado" ===== */
+  let lastFocusedFormField = null;
+
+  function isEditableField(el){
+    if(!el) return false;
+    if(el.id === 'tagInput') return false;
+    if(el.disabled) return false;
+    const tag = (el.tagName || '').toLowerCase();
+    if(tag === 'input'){
+      const type = (el.getAttribute('type') || 'text').toLowerCase();
+      return !['button','submit','checkbox','radio','file','color','range','hidden'].includes(type);
+    }
+    if(tag === 'textarea') return true;
+    return false;
+  }
+
+  function focusIfEditable(el){
+    if(!isEditableField(el)) return;
+    try{
+      el.focus({ preventScroll:true });
+      lastFocusedFormField = el;
+    }catch(e){}
+  }
+
+  function setupAutoFocusForNfc(){
+    const cap = document.getElementById('capture');
+    if(!cap) return;
+
+    cap.addEventListener('focusin', (e)=>{
+      if(isEditableField(e.target)) lastFocusedFormField = e.target;
+    });
+
+    // Hover (ratón): "me pongo encima del campo"
+    cap.addEventListener('mousemove', (e)=>{
+      const el = e.target;
+      if(isEditableField(el) && document.activeElement !== el){
+        focusIfEditable(el);
+      }
+    }, { passive:true });
+
+    // Táctil: tocar
+    cap.addEventListener('touchstart', (e)=>{
+      const el = e.target;
+      if(isEditableField(el)) focusIfEditable(el);
+    }, { passive:true });
+  }
+
+  /* ===== Web NFC (para tu caso: ventana del sistema pero no escribe) ===== */
+  let ndefReader = null;
+  let nfcActive = false;
+
+  function webNfcSupported(){
+    return ('NDEFReader' in window);
+  }
+  function isSecureContextOk(){
+    return window.isSecureContext || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  }
+
+  function decodeNdefTextRecord(record){
+    // RecordType "text": payload = status + lang + text
+    try{
+      if(record.recordType !== 'text') return '';
+      const u8 = new Uint8Array(record.data);
+      if(!u8.length) return '';
+      const status = u8[0];
+      const langLen = status & 0x3F;
+      const isUtf16 = (status & 0x80) !== 0;
+      const encoding = isUtf16 ? 'utf-16' : 'utf-8';
+      const textBytes = u8.slice(1 + langLen);
+      return new TextDecoder(encoding).decode(textBytes);
+    }catch(e){
+      return '';
+    }
+  }
+
+  function writeCodeToInputs(code){
+    const c = normalizeCode(code);
+    if(!c) return;
+
+    const tagInp = document.getElementById('tagInput');
+    if(tagInp){
+      tagInp.value = c;
+      tagInp.dispatchEvent(new Event('input', { bubbles:true }));
+      tagInp.dispatchEvent(new Event('change', { bubbles:true }));
+      try{ tagInp.focus(); }catch(e){}
+    }
+
+    if(lastFocusedFormField && isEditableField(lastFocusedFormField)){
+      try{
+        lastFocusedFormField.value = c;
+        lastFocusedFormField.dispatchEvent(new Event('input', { bubbles:true }));
+        lastFocusedFormField.dispatchEvent(new Event('change', { bubbles:true }));
+      }catch(e){}
+    }
+  }
+
+  async function startWebNfcScan(){
+    if(nfcActive){
+      setTagStatus('<b>NFC:</b> ya está activo. Acerca el TAG…');
+      return;
+    }
+    if(!webNfcSupported()){
+      setTagStatus('<b>Web NFC no disponible</b> en este navegador. Usa Chrome Android.');
+      return;
+    }
+    if(!isSecureContextOk()){
+      setTagStatus('<b>Web NFC requiere HTTPS</b> (o localhost). Abre esta página en HTTPS para leer el TAG.');
+      return;
+    }
+
+    try{
+      ndefReader = new NDEFReader();
+      await ndefReader.scan();
+      nfcActive = true;
+      document.getElementById('btnStopNfc').disabled = false;
+      setTagStatus('<b>NFC:</b> acercar TAG…');
+
+      ndefReader.onreadingerror = () => {
+        setTagStatus('<b>NFC:</b> error de lectura. Prueba otra vez.');
+      };
+
+      ndefReader.onreading = (event) => {
+        let code = '';
+
+        // 1) serialNumber (si el dispositivo lo proporciona)
+        if(event.serialNumber) code = normalizeCode(event.serialNumber);
+
+        // 2) buscar un record de texto
+        if(!code && event.message && event.message.records){
+          for(const r of event.message.records){
+            const t = normalizeCode(decodeNdefTextRecord(r));
+            if(t){ code = t; break; }
+          }
+        }
+
+        // 3) fallback: primer record -> intentar decodificar UTF-8
+        if(!code && event.message && event.message.records && event.message.records.length){
+          try{
+            const r0 = event.message.records[0];
+            const u8 = new Uint8Array(r0.data);
+            const t = normalizeCode(new TextDecoder('utf-8').decode(u8));
+            if(t) code = t;
+          }catch(e){}
+        }
+
+        if(code){
+          writeCodeToInputs(code);
+
+          if(tagReadMode === 'goto'){
+            setTagStatus(`<b>NFC leído:</b> ${escapeHTML(code)}<br>→ yendo al formulario asociado…`);
+            gotoByCode(code);
+          }else if(tagReadMode === 'save'){
+            setTagStatus(`<b>NFC leído:</b> ${escapeHTML(code)}<br>→ se usará como código al guardar/actualizar plantilla.`);
+          }else{
+            setTagStatus(`<b>NFC leído:</b> ${escapeHTML(code)}`);
+            const t = tplByCode(code);
+            if(t) gotoByCode(code);
+          }
+        }else{
+          setTagStatus('<b>NFC:</b> leído pero sin código NDEF utilizable (usa TAG con NDEF Text o Serial disponible).');
+        }
+      };
+    }catch(err){
+      nfcActive = false;
+      document.getElementById('btnStopNfc').disabled = true;
+      const name = (err && err.name) ? err.name : '';
+      if(name === 'NotAllowedError'){
+        setTagStatus('<b>NFC:</b> permiso denegado. Acepta el permiso y pulsa "Leer TAG" de nuevo.');
+      }else if(name === 'NotSupportedError'){
+        setTagStatus('<b>NFC:</b> no soportado en este dispositivo/navegador.');
+      }else{
+        setTagStatus('<b>NFC:</b> error iniciando lectura: ' + escapeHTML(name || String(err || '')));
+      }
+    }
+  }
+
+  function stopWebNfcScan(){
+    // La API no tiene un "stop" estándar universal; anulamos callbacks y marcamos como inactivo.
+    if(ndefReader){
+      try{ ndefReader.onreading = null; }catch(e){}
+      try{ ndefReader.onreadingerror = null; }catch(e){}
+    }
+    ndefReader = null;
+    nfcActive = false;
+    document.getElementById('btnStopNfc').disabled = true;
+    setTagStatus('<b>NFC:</b> detenido.');
+  }
+
+  function focusTagReader(mode){
+    tagReadMode = mode || null;
+
+    const inp = document.getElementById('tagInput');
+    if(inp){
+      inp.focus();
+      inp.select();
+    }
+
+    if(tagReadMode === 'save'){
+      setTagStatus('<b>Modo:</b> Leer TAG para <b>ASOCIAR</b> al guardar. (Acerca el TAG)');
+    }else if(tagReadMode === 'goto'){
+      setTagStatus('<b>Modo:</b> Leer TAG para <b>IR</b> al formulario. (Acerca el TAG)');
+    }else{
+      setTagStatus('');
+    }
+
+    // Inicia Web NFC (si se puede) para que el código se escriba en el HTML
+    startWebNfcScan();
+  }
+
+  /* ===== persistent templates (localStorage) ===== */
+  const TPL_STORAGE_KEY = 'formu_templates_v1';
+  let currentTemplateId = null;
+
+  function readTemplates(){
+    const raw = localStorage.getItem(TPL_STORAGE_KEY);
+    if(!raw) return [];
+    try{
+      const arr = JSON.parse(raw);
+      return Array.isArray(arr) ? arr : [];
+    }catch(e){
+      return [];
+    }
+  }
+  function writeTemplates(arr){
+    localStorage.setItem(TPL_STORAGE_KEY, JSON.stringify(arr));
+  }
+  function tplById(id){
+    return readTemplates().find(t => t.id === id) || null;
+  }
+  function tplByCode(code){
+    const c = normalizeCode(code);
+    if(!c) return null;
+    return readTemplates().find(t => normalizeCode(t.code) === c) || null;
+  }
+  function listCategories(templates){
+    const set = new Set();
+    templates.forEach(t=>{
+      const c = normalizeCategory(t.category);
+      if(c) set.add(c);
+    });
+    return [...set].sort((a,b)=>a.localeCompare(b,'es'));
+  }
+  function listTemplatesByCategory(templates, category){
+    const c = normalizeCategory(category);
+    return templates
+      .filter(t => normalizeCategory(t.category) === c)
+      .sort((a,b)=>normalizeName(a.name).localeCompare(normalizeName(b.name),'es'));
+  }
+
+  function refreshTemplateUI(keepSelection=true){
+    const templates = readTemplates();
+    const catSel = document.getElementById('tplCategory');
+    const formSel = document.getElementById('tplForm');
+
+    const prevCat = keepSelection ? (catSel.value || '') : '';
+    const prevForm = keepSelection ? (formSel.value || '') : '';
+
+    const cats = listCategories(templates);
+
+    catSel.innerHTML = '';
+    if(cats.length === 0){
+      const o = document.createElement('option');
+      o.value = '';
+      o.textContent = '— Sin categorías —';
+      catSel.appendChild(o);
+    }else{
+      const o0 = document.createElement('option');
+      o0.value = '';
+      o0.textContent = '— Selecciona —';
+      catSel.appendChild(o0);
+
+      cats.forEach(c=>{
+        const o = document.createElement('option');
+        o.value = c;
+        o.textContent = c;
+        catSel.appendChild(o);
+      });
+
+      if(prevCat && cats.includes(prevCat)) catSel.value = prevCat;
+    }
+
+    const chosenCat = catSel.value || '';
+    const forms = chosenCat ? listTemplatesByCategory(templates, chosenCat) : [];
+
+    formSel.innerHTML = '';
+    if(!chosenCat){
+      const o = document.createElement('option');
+      o.value = '';
+      o.textContent = '— Selecciona una categoría —';
+      formSel.appendChild(o);
+    }else if(forms.length === 0){
+      const o = document.createElement('option');
+      o.value = '';
+      o.textContent = '— Sin formularios —';
+      formSel.appendChild(o);
+    }else{
+      const o0 = document.createElement('option');
+      o0.value = '';
+      o0.textContent = '— Selecciona —';
+      formSel.appendChild(o0);
+
+      forms.forEach(t=>{
+        const o = document.createElement('option');
+        o.value = t.id;
+        const code = normalizeCode(t.code);
+        o.textContent = code ? `${t.name} [${code}]` : t.name;
+        formSel.appendChild(o);
+      });
+
+      if(prevForm && forms.some(f=>f.id===prevForm)) formSel.value = prevForm;
+    }
+
+    updateTemplateMeta();
+  }
+
+  function updateTemplateMeta(){
+    const meta = document.getElementById('tplMeta');
+    const btnUpd = document.getElementById('btnUpdateTpl');
+    const btnDel = document.getElementById('btnDeleteTpl');
+
+    if(!currentTemplateId){
+      meta.textContent = '';
+      btnUpd.disabled = true;
+      btnDel.disabled = true;
+      return;
+    }
+
+    const t = tplById(currentTemplateId);
+    if(!t){
+      currentTemplateId = null;
+      meta.textContent = '';
+      btnUpd.disabled = true;
+      btnDel.disabled = true;
+      return;
+    }
+
+    const updated = t.updatedAt ? new Date(t.updatedAt).toLocaleString('es-ES') : '—';
+    const code = normalizeCode(t.code);
+    meta.innerHTML =
+      `<b>Cargada:</b> ${escapeHTML(t.category)} / ${escapeHTML(t.name)}`
+      + (code ? `<br><b>Código:</b> ${escapeHTML(code)}` : '')
+      + `<br><b>Actualizada:</b> ${escapeHTML(updated)}`;
+
+    btnUpd.disabled = false;
+    btnDel.disabled = false;
+  }
+
+  function onCategoryChange(){
+    currentTemplateId = null;
+    refreshTemplateUI(true);
+  }
+
+  function onTemplateChange(){
+    const id = document.getElementById('tplForm').value || '';
+    if(!id){
+      currentTemplateId = null;
+      updateTemplateMeta();
+      return;
+    }
+    const t = tplById(id);
+    if(!t || !t.data){
+      alert('Plantilla no encontrada o inválida.');
+      currentTemplateId = null;
+      updateTemplateMeta();
+      return;
+    }
+    loadLayoutFromData(t.data);
+    currentTemplateId = id;
+
+    const code = normalizeCode(t.code);
+    if(code){
+      const tagInp = document.getElementById('tagInput');
+      if(tagInp) tagInp.value = code;
+    }
+    updateTemplateMeta();
+  }
+
+  function gotoByCode(code){
+    const c = normalizeCode(code);
+    if(!c){ alert('Código vacío.'); return; }
+
+    const t = tplByCode(c);
+    if(!t){ alert('No se ha encontrado ningún formulario con ese código.'); return; }
+
+    loadLayoutFromData(t.data);
+    currentTemplateId = t.id;
+
+    const catSel = document.getElementById('tplCategory');
+    const formSel = document.getElementById('tplForm');
+
+    catSel.value = t.category || '';
+    refreshTemplateUI(true);
+    formSel.value = t.id;
+
+    const tagInp = document.getElementById('tagInput');
+    if(tagInp) tagInp.value = c;
+
+    updateTemplateMeta();
+  }
+
+  function saveTemplateCore({name, category, code}){
+    const data = serialize();
+    const templates = readTemplates();
+
+    const existing = templates.find(t => normalizeCategory(t.category)===category && normalizeName(t.name)===name);
+    if(existing){
+      const ok = confirm('Ya existe una plantilla con ese nombre en esa categoría.\n¿Quieres sobrescribirla?');
+      if(!ok) return;
+
+      existing.data = data;
+      existing.updatedAt = nowISO();
+      if(code) existing.code = code;
+
+      writeTemplates(templates);
+
+      currentTemplateId = existing.id;
+      document.getElementById('tplCategory').value = existing.category;
+      refreshTemplateUI(true);
+      document.getElementById('tplForm').value = existing.id;
+      updateTemplateMeta();
+      return;
+    }
+
+    const tpl = {
+      id: genId(),
+      name,
+      category,
+      code: code || '',
+      createdAt: nowISO(),
+      updatedAt: nowISO(),
+      data
+    };
+    templates.push(tpl);
+    writeTemplates(templates);
+
+    currentTemplateId = tpl.id;
+    document.getElementById('tplCategory').value = tpl.category;
+    refreshTemplateUI(true);
+    document.getElementById('tplForm').value = tpl.id;
+    updateTemplateMeta();
+  }
+
+  function saveTemplatePrompt(){
+    const name = normalizeName(prompt('Nombre del formulario (plantilla):', ''));
+    if(!name) return;
+
+    const category = normalizeCategory(prompt('Categoría:', 'General'));
+    if(!category) return;
+
+    const suggestedCode = normalizeCode(document.getElementById('tagInput')?.value || '');
+    const code = normalizeCode(prompt('Código (TAG) para asociar (opcional):', suggestedCode));
+    if(code){
+      const tagInp = document.getElementById('tagInput');
+      if(tagInp) tagInp.value = code;
+    }
+
+    saveTemplateCore({name, category, code});
+  }
+
+  function updateCurrentTemplate(){
+    if(!currentTemplateId){
+      alert('No hay plantilla cargada para actualizar.');
+      return;
+    }
+    const templates = readTemplates();
+    const t = templates.find(x=>x.id===currentTemplateId);
+    if(!t){
+      alert('Plantilla no encontrada.');
+      currentTemplateId = null;
+      updateTemplateMeta();
+      return;
+    }
+    const ok = confirm(`Vas a actualizar la plantilla:\n${t.category} / ${t.name}\n\n¿Continuar?`);
+    if(!ok) return;
+
+    t.data = serialize();
+    t.updatedAt = nowISO();
+
+    const tagCode = normalizeCode(document.getElementById('tagInput')?.value || '');
+    if(tagCode) t.code = tagCode;
+
+    writeTemplates(templates);
+
+    document.getElementById('tplCategory').value = t.category;
+    refreshTemplateUI(true);
+    document.getElementById('tplForm').value = t.id;
+    updateTemplateMeta();
+  }
+
+  function deleteCurrentTemplate(){
+    if(!currentTemplateId){
+      alert('No hay plantilla cargada para borrar.');
+      return;
+    }
+    const t = tplById(currentTemplateId);
+    if(!t){
+      currentTemplateId = null;
+      updateTemplateMeta();
+      return;
+    }
+    const ok = confirm(`¿Borrar esta plantilla?\n${t.category} / ${t.name}\n\nEsta acción no se puede deshacer.`);
+    if(!ok) return;
+
+    const templates = readTemplates().filter(x=>x.id!==currentTemplateId);
+    writeTemplates(templates);
+
+    currentTemplateId = null;
+    refreshTemplateUI(false);
+    document.getElementById('tplCategory').value = '';
+    refreshTemplateUI(true);
+  }
+
+  function duplicateCurrentToNewTemplate(){
+    const name = normalizeName(prompt('Nombre de la nueva plantilla (duplicado):', ''));
+    if(!name) return;
+
+    const category = normalizeCategory(prompt('Categoría:', document.getElementById('tplCategory').value || 'General'));
+    if(!category) return;
+
+    const suggestedCode = normalizeCode(document.getElementById('tagInput')?.value || '');
+    const code = normalizeCode(prompt('Código (TAG) para asociar (opcional):', suggestedCode));
+    if(code){
+      const tagInp = document.getElementById('tagInput');
+      if(tagInp) tagInp.value = code;
+    }
+
+    const data = serialize();
+    const templates = readTemplates();
+
+    const existing = templates.find(t => normalizeCategory(t.category)===category && normalizeName(t.name)===name);
+    if(existing){
+      const ok = confirm('Ya existe una plantilla con ese nombre en esa categoría.\n¿Quieres sobrescribirla?');
+      if(!ok) return;
+
+      existing.data = data;
+      existing.updatedAt = nowISO();
+      if(code) existing.code = code;
+
+      writeTemplates(templates);
+
+      currentTemplateId = existing.id;
+      document.getElementById('tplCategory').value = existing.category;
+      refreshTemplateUI(true);
+      document.getElementById('tplForm').value = existing.id;
+      updateTemplateMeta();
+      return;
+    }
+
+    const tpl = { id: genId(), name, category, code: code || '', createdAt: nowISO(), updatedAt: nowISO(), data };
+    templates.push(tpl);
+    writeTemplates(templates);
+
+    currentTemplateId = tpl.id;
+    document.getElementById('tplCategory').value = tpl.category;
+    refreshTemplateUI(true);
+    document.getElementById('tplForm').value = tpl.id;
+    updateTemplateMeta();
+  }
+
+  function newBlankForm(){
+    const ok = confirm('Esto sustituirá el formulario actual por uno nuevo (en blanco) en pantalla.\nNo afecta a plantillas guardadas.\n\n¿Continuar?');
+    if(!ok) return;
+
+    currentTemplateId = null;
+    document.getElementById('tplForm').value = '';
+    applyHeaderText();
+
+    const page = document.getElementById('capture');
+    [...page.querySelectorAll('.field')].forEach(f => f.remove());
+    refreshAutoGrow();
+    updateTemplateMeta();
+  }
+
+  /* ===== header editing ===== */
+  function applyHeaderText(shouldTouch=true){
+    document.getElementById('docTitle').textContent = document.getElementById('hdrTitle').value;
+    document.getElementById('docSubtitle').textContent = document.getElementById('hdrSubtitle').value;
+    if(shouldTouch) touchEdited();
+  }
+
+  function autoGrow(t){
+    t.style.height = 'auto';
+    t.style.height = (t.scrollHeight + 2) + 'px';
+  }
+  function refreshAutoGrow(){
+    document.querySelectorAll('textarea.autogrow').forEach(autoGrow);
+  }
+  document.addEventListener('input', (e)=>{
+    if(e.target.matches('textarea.autogrow')) autoGrow(e.target);
+  });
+
+  /* ===== add/remove fields ===== */
+  let radioCounter = 1;
+
+  function fieldHeadHTML(title){
+    return `
+      <div class="field-head">
+        <div class="title" ondblclick="editTitle(this)">${escapeHTML(title)}</div>
+        <div class="actions">
+          <button class="iconbtn" title="Subir" onclick="moveUp(this)">↑</button>
+          <button class="iconbtn" title="Bajar" onclick="moveDown(this)">↓</button>
+          <button class="iconbtn" title="Borrar" onclick="removeField(this)">✕</button>
+        </div>
+      </div>`;
+  }
+
+  function addField(){
+    const type = document.getElementById('newType').value;
+    const page = document.getElementById('capture');
+
+    const field = document.createElement('div');
+    field.className = 'field';
+    field.dataset.type = type;
+
+    if(type === 'text'){
+      field.dataset.title = 'Texto';
+      field.innerHTML = fieldHeadHTML('Texto') + `
+        <div class="field-body textline">
+          <input type="text" value="">
+        </div>`;
+    }
+
+    if(type === 'radio'){
+      field.dataset.title = 'Selección';
+      field.dataset.config = JSON.stringify({options:["Bien","Mal","No dispone"]});
+      const name = 'r' + (radioCounter++);
+      field.innerHTML = fieldHeadHTML('Selección') + `
+        <div class="field-body" ondblclick="editRadioOptions(this)">
+          <div class="opts">
+            <label><input type="radio" name="${name}"> Bien</label>
+            <label><input type="radio" name="${name}"> Mal</label>
+            <label><input type="radio" name="${name}"> No dispone</label>
+          </div>
+          <textarea class="autogrow" placeholder="Observaciones"></textarea>
+        </div>`;
+    }
+
+    if(type === 'photos'){
+      field.dataset.title = 'Imagenes';
+      field.innerHTML = fieldHeadHTML('Imagenes') + `
+        <div class="field-body">
+          <input type="file" multiple accept="image/*" onchange="previewImages(this)">
+          <div class="photos"></div>
+        </div>`;
+    }
+
+    page.appendChild(field);
+    refreshAutoGrow();
+    touchEdited();
+  }
+
+  function removeField(btn){
+    btn.closest('.field').remove();
+    touchEdited();
+  }
+
+  function moveUp(btn){
+    const field = btn.closest('.field');
+    const prev = field.previousElementSibling;
+    if(prev && !prev.classList.contains('doc-header')){
+      field.parentNode.insertBefore(field, prev);
+      touchEdited();
+    }
+  }
+
+  function moveDown(btn){
+    const field = btn.closest('.field');
+    const next = field.nextElementSibling;
+    if(next){
+      field.parentNode.insertBefore(next, field);
+      touchEdited();
+    }
+  }
+
+  function editTitle(el){
+    const field = el.closest('.field');
+    const current = el.textContent.trim();
+    const val = prompt('Título del bloque:', current);
+    if(val === null) return;
+    el.textContent = val;
+    field.dataset.title = val;
+    touchEdited();
+  }
+
+  function editRadioOptions(body){
+    const field = body.closest('.field');
+    if(!field || field.dataset.type !== 'radio') return;
+
+    const cfg = safeJSON(field.dataset.config);
+    const current = (cfg.options || ["Bien","Mal","No dispone"]).join(', ');
+    const val = prompt('Opciones separadas por coma:', current);
+    if(val === null) return;
+
+    const opts = val.split(',').map(s=>s.trim()).filter(Boolean);
+    cfg.options = opts.length ? opts : ["Bien","Mal","No dispone"];
+    field.dataset.config = JSON.stringify(cfg);
+
+    const name = body.querySelector('input[type="radio"]')?.name || ('r' + (radioCounter++));
+    const wrap = body.querySelector('.opts');
+    wrap.innerHTML = cfg.options.map(o =>
+      `<label><input type="radio" name="${name}"> ${escapeHTML(o)}</label>`
+    ).join('');
+    touchEdited();
+  }
+
+  function previewImages(input){
+    const grid = input.closest('.field-body').querySelector('.photos');
+    grid.innerHTML = '';
+    touchEdited();
+    [...input.files].forEach(file=>{
+      const reader = new FileReader();
+      reader.onload = e=>{
+        const img = document.createElement('img');
+        img.src = e.target.result;
+        grid.appendChild(img);
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  /* ===== save / load JSON ===== */
+  function getTheme(){
+    const styles = getComputedStyle(document.documentElement);
+    return {
+      border: styles.getPropertyValue('--border').trim(),
+      headerBg: styles.getPropertyValue('--header-bg').trim(),
+      headerText: styles.getPropertyValue('--header-text').trim(),
+      sectionBg: styles.getPropertyValue('--section-bg').trim(),
+      sectionText: styles.getPropertyValue('--section-text').trim(),
+      pageBg: styles.getPropertyValue('--page-bg').trim()
+    };
+  }
+
+  function serialize(){
+    const page = document.getElementById('capture');
+    const logoBox = document.getElementById('logoBox');
+
+    const header = {
+      title: document.getElementById('hdrTitle').value,
+      subtitle: document.getElementById('hdrSubtitle').value,
+      logo: FIXED_LOGO_URL,
+      lastEdited: lastEditedISO
+    };
+
+    if(logoBox) logoBox.dataset.logo = FIXED_LOGO_URL;
+
+    const fields = [...page.querySelectorAll('.field')].map(f=>{
+      const type = f.dataset.type || 'text';
+      const title = f.querySelector('.title')?.textContent?.trim() || '';
+      const config = safeJSON(f.dataset.config);
+
+      const out = { type, title, config };
+
+      if(type === 'text'){
+        out.value = f.querySelector('input[type="text"]')?.value ?? '';
+      }
+      if(type === 'radio'){
+        const radios = [...f.querySelectorAll('input[type="radio"]')];
+        const checked = radios.find(r=>r.checked);
+        out.selected = checked ? checked.parentElement.textContent.trim() : '';
+        out.name = radios[0]?.name || '';
+        out.obs = f.querySelector('textarea')?.value ?? '';
+      }
+      if(type === 'photos'){
+        out.images = [...f.querySelectorAll('.photos img')].map(img=>img.src);
+      }
+      return out;
+    });
+
+    return { header, theme: getTheme(), fields };
+  }
+
+  function saveLayout(){
+    const data = serialize();
+    const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'informe_layout.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function loadLayout(){
+    const inp = document.createElement('input');
+    inp.type = 'file';
+    inp.accept = 'application/json';
+    inp.onchange = async () => {
+      const file = inp.files?.[0];
+      if(!file) return;
+      const text = await file.text();
+      let data;
+      try{ data = JSON.parse(text); }catch(e){ alert('JSON inválido'); return; }
+      loadLayoutFromData(data);
+      currentTemplateId = null;
+      updateTemplateMeta();
+    };
+    inp.click();
+  }
+
+  function loadLayoutFromData(data){
+    if(!data || typeof data !== 'object'){
+      alert('Datos inválidos.');
+      return;
+    }
+
+    if(data.theme){
+      setVar('--border', data.theme.border || '#000');
+      setVar('--header-bg', data.theme.headerBg || '#fff');
+      setVar('--header-text', data.theme.headerText || '#000');
+      setVar('--section-bg', data.theme.sectionBg || '#e6e6e6');
+      setVar('--section-text', data.theme.sectionText || '#000');
+      setVar('--page-bg', data.theme.pageBg || '#fff');
+    }
+
+    if(data.header){
+      document.getElementById('hdrTitle').value = data.header.title || '';
+      document.getElementById('hdrSubtitle').value = data.header.subtitle || '';
+      lastEditedISO = data.header.lastEdited || nowISO();
+      updateLastEditedUI();
+      applyHeaderText(false);
+      applyFixedLogo();
+    } else {
+      lastEditedISO = nowISO();
+      updateLastEditedUI();
+      applyFixedLogo();
+    }
+
+    const page = document.getElementById('capture');
+    [...page.querySelectorAll('.field')].forEach(f => f.remove());
+
+    (data.fields || []).forEach(d=>{
+      const field = document.createElement('div');
+      field.className = 'field';
+      field.dataset.type = d.type;
+      field.dataset.title = d.title || '';
+      if(d.config) field.dataset.config = JSON.stringify(d.config);
+
+      if(d.type === 'text'){
+        field.innerHTML = fieldHeadHTML(d.title || 'Texto') + `
+          <div class="field-body textline">
+            <input type="text" value="${escapeAttr(d.value || '')}">
+          </div>`;
+      }
+
+      if(d.type === 'radio'){
+        const cfg = d.config || {};
+        const options = cfg.options || ["Bien","Mal","No dispone"];
+        const name = d.name || ('r' + (radioCounter++));
+        field.dataset.config = JSON.stringify(cfg);
+        field.innerHTML = fieldHeadHTML(d.title || 'Selección') + `
+          <div class="field-body" ondblclick="editRadioOptions(this)">
+            <div class="opts">
+              ${options.map(o=>{
+                const checked = (d.selected || '') === o ? 'checked' : '';
+                return `<label><input type="radio" name="${name}" ${checked}> ${escapeHTML(o)}</label>`;
+              }).join('')}
+            </div>
+            <textarea class="autogrow" placeholder="Observaciones">${escapeHTML(d.obs || '')}</textarea>
+          </div>`;
+      }
+
+      if(d.type === 'photos'){
+        field.innerHTML = fieldHeadHTML(d.title || 'Imagenes') + `
+          <div class="field-body">
+            <input type="file" multiple accept="image/*" onchange="previewImages(this)">
+            <div class="photos"></div>
+          </div>`;
+      }
+
+      page.appendChild(field);
+
+      if(d.type === 'photos' && Array.isArray(d.images)){
+        const grid = field.querySelector('.photos');
+        d.images.forEach(src=>{
+          const img = document.createElement('img');
+          img.src = src;
+          grid.appendChild(img);
+        });
+      }
+    });
+
+    refreshAutoGrow();
+  }
+
+  /* ===== PDF export WITHOUT cutting fields ===== */
+  async function exportPDFNoCut(){
+    refreshAutoGrow();
+    applyFixedLogo();
+
+    const { jsPDF } = window.jspdf;
+    const pdf = new jsPDF({ orientation:'p', unit:'mm', format:'a4' });
+
+    const pageW = 210;
+    const pageH = 297;
+    const margin = 10;
+    const contentW = pageW - margin*2;
+    const contentH = pageH - margin*2;
+
+    document.body.classList.add('exporting');
+
+    async function renderEl(element){
+      return await html2canvas(element, {
+        scale: 2,
+        backgroundColor: '#ffffff',
+        useCORS: true,
+        scrollX: 0,
+        scrollY: -window.scrollY,
+        onclone: (doc)=>{
+          const cap = doc.getElementById('capture');
+          if(cap){ cap.style.boxShadow = 'none'; cap.style.margin = '0'; }
+          doc.querySelectorAll('.actions').forEach(a => a.style.display = 'none');
+        }
+      });
+    }
+
+    const header = document.getElementById('docHeader');
+    const fields = [...document.querySelectorAll('#capture .field')];
+    const blocks = [header, ...fields];
+
+    let cursorY = margin;
+
+    for(const block of blocks){
+      const canvas = await renderEl(block);
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+
+      let blockWmm = contentW;
+      let blockHmm = (canvas.height * blockWmm) / canvas.width;
+
+      if(blockHmm > contentH){
+        const scaleFactor = contentH / blockHmm;
+        blockWmm = blockWmm * scaleFactor;
+        blockHmm = contentH;
+      }
+
+      if(cursorY + blockHmm > (pageH - margin)){
+        pdf.addPage();
+        cursorY = margin;
+      }
+
+      const x = margin + (contentW - blockWmm) / 2;
+      pdf.addImage(imgData, 'JPEG', x, cursorY, blockWmm, blockHmm);
+      cursorY += blockHmm + 2;
+    }
+
+    pdf.save('informe_A4_sin_cortes.pdf');
+    document.body.classList.remove('exporting');
+  }
+
+  document.addEventListener('input', (e)=>{
+    const cap = document.getElementById('capture');
+    if(!cap) return;
+    if(cap.contains(e.target) && (e.target.matches('input, textarea, select'))){
+      touchEdited();
+    }
+  });
+  document.addEventListener('change', (e)=>{
+    const cap = document.getElementById('capture');
+    if(!cap) return;
+    if(cap.contains(e.target) && (e.target.matches('input, textarea, select'))){
+      touchEdited();
+    }
+  });
+
+  /* ===== TAG input behavior (Enter) ===== */
+  document.addEventListener('keydown', (e)=>{
+    const inp = document.getElementById('tagInput');
+    if(!inp) return;
+    if(e.target !== inp) return;
+
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      const code = normalizeCode(inp.value || '');
+      if(!code) return;
+
+      if(tagReadMode === 'goto'){
+        gotoByCode(code);
+      }else if(tagReadMode === 'save'){
+        setTagStatus(`<b>Código:</b> ${escapeHTML(code)} (se usará como sugerencia al guardar)`);
+      }else{
+        const t = tplByCode(code);
+        if(t) gotoByCode(code);
+      }
+    }
+  });
+
+  /* ===== init ===== */
+  lastEditedISO = nowISO();
+  updateLastEditedUI();
+  applyFixedLogo();
+  applyHeaderText();
+  refreshAutoGrow();
+  refreshTemplateUI(false);
+  setTagStatus('');
+  setupAutoFocusForNfc();
+</script>
+</body>
+</html>
