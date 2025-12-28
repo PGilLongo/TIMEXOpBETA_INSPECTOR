@@ -636,7 +636,7 @@
     data.meta.name = data.meta.name || item.form || '';
 
     return {
-      id: makeId(),
+      id: makeId(),                     // SIEMPRE NUEVO ID -> inspección distinta
       savedAtISO: nowISO(),
       templateId: item.id || '',
       tag: normalize(lastOpenedTag) || normalize(lastNFCTag) || '',
@@ -832,6 +832,8 @@
     document.title = oldTitle;
   }
 
+  // ✅ MODIFICADO: al guardar, se guarda y se reinicia el formulario automáticamente.
+  // Guardar el mismo formulario varias veces => varias inspecciones distintas (id nuevo cada vez).
   function saveCurrentInspection(){
     const item = getCurrentItem();
     if(!item || !item.data){
@@ -842,8 +844,12 @@
     const ins = serializeInspection(item);
     inspections.push(ins);
     saveInspections();
+
+    // Reinicio inmediato del formulario (sin confirmación)
+    resetCurrentForm({ silent: true });
+
     updateStatus();
-    alert('Inspección guardada.');
+    alert('Inspección guardada. Formulario reiniciado.');
   }
 
   function exportAllInspectionsForDB(){
@@ -855,7 +861,7 @@
     const out = {
       format: 'inspector_inspections_v1',
       exportedAtISO: nowISO(),
-      inspections: inspections.map(x=>deepClone(x))
+      inspections: inspections.map(x=>deepClone(x)) // ✅ 100% de todas las inspecciones guardadas
     };
 
     const filename = `inspecciones__${exportStamp(new Date())}.json`;
@@ -1214,14 +1220,19 @@
     }
   }
 
-  function resetCurrentForm(){
+  // ✅ MODIFICADO: permite reset silencioso (para usar tras guardar)
+  function resetCurrentForm(opts = {}){
     const item = getCurrentItem();
     if(!item){
       alert('No hay formulario abierto.');
       return;
     }
-    const ok = confirm('¿Reiniciar el formulario? Se perderán los cambios no guardados en esta sesión.');
-    if(!ok) return;
+
+    const silent = !!opts.silent;
+    if(!silent){
+      const ok = confirm('¿Reiniciar el formulario? Se perderán los cambios no guardados en esta sesión.');
+      if(!ok) return;
+    }
 
     item.data = deepClone(item.baseData);
     if(item.data && item.data.header) item.data.header.logo = FIXED_LOGO_URL;

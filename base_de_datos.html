@@ -476,7 +476,6 @@ function refreshCategoryOptions(){
     return `<option value="${safe}">${safe}</option>`;
   }).join('');
 
-  // intenta mantener selección si sigue existiendo
   if(current && cats.includes(current)) sel.value = current;
 }
 
@@ -491,8 +490,6 @@ function applyFilters(db){
   const from = parseDateSafe(fromVal ? fromVal : null);
   const to = parseDateSafe(toVal ? toVal : null);
 
-  // Ojo: datetime-local no incluye zona explícita; Date() lo interpreta como local del navegador.
-  // Ajuste inclusivo para "hasta": si el usuario pone hh:mm exactos, comparamos <= to.
   const toMs = to ? to.getTime() : null;
   const fromMs = from ? from.getTime() : null;
 
@@ -502,9 +499,7 @@ function applyFilters(db){
     if(q){
       try{
         if(!JSON.stringify(e).toLowerCase().includes(q)) return false;
-      }catch(err){
-        // si algo falla, no filtramos por JSON stringify
-      }
+      }catch(err){}
     }
 
     if(cat && normalizeStr(e.category) !== cat) return false;
@@ -530,7 +525,6 @@ function renderList(){
   const wrap = document.getElementById('histList');
   const db = loadDB();
 
-  // Asegura opciones de categoría (p.ej. tras importaciones)
   refreshCategoryOptions();
 
   const filtered = applyFilters(db);
@@ -624,6 +618,17 @@ function importJsonFiles(){
       try{
         const txt = await f.text();
         const obj = JSON.parse(txt);
+
+        // ✅ MODIFICADO: soporta export del Inspector con múltiples inspecciones en un solo archivo
+        if(obj && typeof obj === 'object' && obj.format === 'inspector_inspections_v1' && Array.isArray(obj.inspections)){
+          for(const one of obj.inspections){
+            const rec = normalizeImportedRecord(one);
+            if(rec) db.push(rec);
+          }
+          continue;
+        }
+
+        // Caso normal: un JSON = un registro
         const rec = normalizeImportedRecord(obj);
         if(rec) db.push(rec);
       }catch(e){}
