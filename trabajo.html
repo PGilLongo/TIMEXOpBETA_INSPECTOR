@@ -444,7 +444,7 @@
 
 <!-- Botón principal grande para leer el TAG -->
 <div class="ctaWrap">
-  <button id="btnReadTag" class="cta" type="button" onclick="readTagAndOpen()">LEER TAG Y ABRIR FORMULARIO</button>
+  <button id="btnReadTag" class="cta" type="button" onclick="readTagAndOpen()">LEER TAG</button>
 </div>
 
 <div class="statusline" id="statusLine">
@@ -546,12 +546,38 @@
     return db.find(x=>x.id===currentId) || null;
   }
 
+  function updateReadTagButtonText(){
+    const btn = document.getElementById('btnReadTag');
+    if(!btn) return;
+
+    const hasDB = db.length > 0;
+    if(!hasDB){
+      btn.textContent = 'LEER TAG';
+      return;
+    }
+
+    const q = normalize(lastNFCTag);
+    const opened = normalize(lastOpenedTag);
+
+    // Si hay un TAG leído y es distinto al del formulario abierto (o no hay formulario aún),
+    // el botón pasa a "ABRIR FORMULARIO".
+    if(q && (!opened || q.toLowerCase() !== opened.toLowerCase())){
+      btn.textContent = 'ABRIR FORMULARIO';
+    }else{
+      btn.textContent = 'LEER TAG';
+    }
+  }
+
   function updateButtons(){
     const hasDB = db.length > 0;
     const hasCurrent = !!getCurrentItem();
-    document.getElementById('btnReadTag').disabled = !hasDB;
+    const btnRead = document.getElementById('btnReadTag');
+
+    btnRead.disabled = !hasDB;
     document.getElementById('btnExportPDF').disabled = !hasCurrent;
     document.getElementById('btnResetForm').disabled = !hasCurrent;
+
+    updateReadTagButtonText();
   }
 
   function updateStatus(){
@@ -796,6 +822,9 @@
   let lastNFCTimeISO = null;
   let nfcStatusText = 'Inicializando…';
 
+  // Tag usado para abrir el formulario actualmente (para controlar el texto del botón)
+  let lastOpenedTag = '';
+
   function isNFCSupported(){
     return ('NDEFReader' in window);
   }
@@ -881,6 +910,15 @@
     // 1) Preferir UID del último TAG NFC leído
     let q = normalize(lastNFCTag);
 
+    // Si el TAG leído es el mismo que el del formulario ya abierto, no abrimos de nuevo.
+    // Debe volver a ponerse en modo "LEER TAG" hasta leer uno distinto.
+    const openedTag = normalize(lastOpenedTag);
+    if(q && openedTag && q.toLowerCase() === openedTag.toLowerCase()){
+      alert('Ya está abierto el formulario de este TAG. Acerca un TAG distinto y vuelve a pulsar “LEER TAG”.');
+      updateReadTagButtonText();
+      return;
+    }
+
     // 2) Si aún no hay UID, intentar activar NFC (si no está activo) y pedir acercar el TAG
     if(!q){
       if(!nfcActive){
@@ -914,6 +952,8 @@
 
     if(matches.length === 1){
       openTemplate(matches[0]);
+      lastOpenedTag = q;
+      updateReadTagButtonText();
       return;
     }
 
@@ -933,6 +973,8 @@
     }
 
     openTemplate(matches[n-1]);
+    lastOpenedTag = q;
+    updateReadTagButtonText();
   }
 
   /* =========================
@@ -1082,6 +1124,7 @@
     if(!ok) return;
     db.length = 0;
     currentId = null;
+    lastOpenedTag = '';
     renderEmptyDocument();
   }
 
