@@ -311,6 +311,44 @@ function makeId(){
 function normalizeStr(s){ return String(s ?? '').trim(); }
 function normalizeLower(s){ return normalizeStr(s).toLowerCase(); }
 
+function stableSerialize(val){
+  const t = typeof val;
+  if(val === null) return 'null';
+  if(t === 'string') return JSON.stringify(val);
+  if(t === 'number' || t === 'boolean') return String(val);
+  if(t !== 'object') return JSON.stringify(String(val));
+  if(Array.isArray(val)){
+    return '[' + val.map(stableSerialize).join(',') + ']';
+  }
+  const keys = Object.keys(val).sort((a,b)=> a.localeCompare(b, 'en', { sensitivity:'base' }));
+  return '{' + keys.map(k => JSON.stringify(k)+':'+stableSerialize(val[k])).join(',') + '}';
+}
+
+function hashString(str){
+  // DJB2 (32-bit) for speed + determinism
+  let h = 5381;
+  for(let i=0;i<str.length;i++){
+    h = ((h << 5) + h) ^ str.charCodeAt(i);
+  }
+  return (h >>> 0).toString(16).padStart(8,'0');
+}
+
+function computeFingerprint(category, form, lastEditedISO, raw){
+  try{
+    const layout = extractLayout(raw) || raw || {};
+    // Evita que pequeñas diferencias irrelevantes rompan el hash
+    const payload = {
+      category: normalizeStr(category),
+      form: normalizeStr(form),
+      lastEditedISO: normalizeStr(lastEditedISO),
+      layout: layout
+    };
+    return hashString(stableSerialize(payload));
+  }catch(e){
+    return hashString(String(Date.now()) + Math.random());
+  }
+}
+
 function hasLayoutShape(obj){
   return !!(obj && typeof obj === 'object' && obj.header && typeof obj.header === 'object' && Array.isArray(obj.fields));
 }
@@ -352,6 +390,7 @@ function normalizeImportedRecord(raw){
     category,
     form,
     lastEditedISO,
+    fingerprint: computeFingerprint(category, form, lastEditedISO, raw),
     raw
   };
 }
@@ -386,6 +425,7 @@ function ensureDbShape(items){
         obj.category = obj.category || rec.category;
         obj.form = obj.form || rec.form;
         obj.lastEditedISO = obj.lastEditedISO || rec.lastEditedISO;
+        if(!obj.fingerprint) obj.fingerprint = rec.fingerprint;
         changed = true;
       }
     }
@@ -395,10 +435,25 @@ function ensureDbShape(items){
       changed = true;
     }
 
+    if(!obj.fingerprint){
+      obj.fingerprint = computeFingerprint(obj.category || '', obj.form || '', obj.lastEditedISO || '', obj.raw || obj);
+      changed = true;
+    }
+
     out.push(obj);
   }
 
-  return { items: out, changed };
+  // ✅ Deduplicación defensiva (por si en el pasado se importaron duplicados)
+  const seen = new Set();
+  const unique = [];
+  for(const it of out){
+    const fp = it && it.fingerprint ? String(it.fingerprint) : '';
+    if(fp && seen.has(fp)){ changed = true; continue; }
+    if(fp) seen.add(fp);
+    unique.push(it);
+  }
+
+  return { items: unique, changed };
 }
 
 function loadDB(){
@@ -613,6 +668,7 @@ function importJsonFiles(){
   inp.onchange = async ()=>{
     const files = [...(inp.files || [])];
     const db = loadDB();
+    const seen = new Set(db.map(x=>String(x?.fingerprint||'')).filter(Boolean));
 
     for(const f of files){
       try{
@@ -623,14 +679,14 @@ function importJsonFiles(){
         if(obj && typeof obj === 'object' && obj.format === 'inspector_inspections_v1' && Array.isArray(obj.inspections)){
           for(const one of obj.inspections){
             const rec = normalizeImportedRecord(one);
-            if(rec) db.push(rec);
+            if(rec && rec.fingerprint && !seen.has(String(rec.fingerprint))){ db.push(rec); seen.add(String(rec.fingerprint)); }
           }
           continue;
         }
 
         // Caso normal: un JSON = un registro
         const rec = normalizeImportedRecord(obj);
-        if(rec) db.push(rec);
+        if(rec && rec.fingerprint && !seen.has(String(rec.fingerprint))){ db.push(rec); seen.add(String(rec.fingerprint)); }
       }catch(e){}
     }
 
@@ -792,12 +848,22 @@ async function getExportFrame(){
 
   input[type="text"], input[type="number"], input[type="date"], textarea, select{
     width:100%;
-    padding: 8px 10px;
     border: 1px solid var(--border);
     font: inherit;
     background:#fff;
+
+    /* ✅ FIX: evita que html2canvas recorte el texto por abajo (descenders) */
+    line-height: 1.35;
+    padding: 9px 10px 11px;
   }
-  textarea{ min-height: 90px; resize: vertical; }
+  input[type="text"], input[type="number"], input[type="date"], select{
+    height: 34px;
+  }
+  textarea{
+    min-height: 90px;
+    resize: vertical;
+    padding-bottom: 14px;
+  }
 
   .checkline{
     display:flex;
