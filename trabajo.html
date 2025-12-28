@@ -337,6 +337,78 @@
     box-sizing:border-box;
   }
 
+  .photo-slot{
+    position:relative;
+    width:var(--photo-w);
+    height:var(--photo-h);
+    border:2px solid var(--border);
+    background:#fff;
+    box-sizing:border-box;
+    overflow:hidden;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+  }
+  .photo-slot img{
+    border:none;
+    width:100%;
+    height:100%;
+    object-fit:contain;
+  }
+  .photo-slot .ph{
+    font-size:12px;
+    font-weight:900;
+    opacity:.7;
+    padding:8px;
+    text-align:center;
+    line-height:1.2;
+  }
+  .photo-slot .slot-actions{
+    position:absolute;
+    left:6px;
+    right:6px;
+    bottom:6px;
+    display:flex;
+    gap:6px;
+    justify-content:space-between;
+    pointer-events:none;
+  }
+  .photo-slot .slot-actions button{
+    pointer-events:auto;
+    border-top:2px solid var(--w95-light);
+    border-left:2px solid var(--w95-light);
+    border-right:2px solid var(--w95-shadow);
+    border-bottom:2px solid var(--w95-shadow);
+    background: var(--w95-bg);
+    padding:6px 8px;
+    font-weight:900;
+    cursor:pointer;
+    font-size:12px;
+    font-family: inherit;
+    color:#000;
+    touch-action: manipulation;
+  }
+  .photo-slot .slot-actions button:active{
+    border-top:2px solid var(--w95-shadow);
+    border-left:2px solid var(--w95-shadow);
+    border-right:2px solid var(--w95-light);
+    border-bottom:2px solid var(--w95-light);
+  }
+
+  .photos-toolbar{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    align-items:center;
+    margin-bottom:8px;
+  }
+  .photos-hint{
+    font-size:12px;
+    font-weight:900;
+    opacity:.85;
+    line-height:1.25;
+  }
+
   /* ===== Responsive (vertical) ===== */
   @media (max-width: 980px){
     :root{
@@ -391,6 +463,10 @@
     .photos{
       grid-template-columns: 1fr;
     }
+    .photo-slot{
+      width:100%;
+      height:var(--photo-h);
+    }
   }
 
   @media (max-width: 420px){
@@ -422,6 +498,8 @@
       --photo-h: 200px;
       --page-padding: 10mm;
     }
+    .photo-slot .slot-actions,
+    .photos-toolbar{ display:none !important; }
   }
 </style>
 </head>
@@ -475,6 +553,11 @@
      CONFIG
   ========================= */
   const FIXED_LOGO_URL = 'https://i.ibb.co/BK6jvxPG/image.png';
+
+  /* Fotos: compresión para guardar en el mismo formato (dataURL) */
+  const PHOTO_MAX_EDGE = 1600;     // px
+  const PHOTO_JPEG_QUALITY = 0.82; // 0..1
+  const PHOTO_SLOTS_DEFAULT = 4;   // si no viene en config
 
   /* =========================
      STATE
@@ -617,6 +700,176 @@
   }
 
   /* =========================
+     FOTO: COMPRESIÓN -> dataURL (JPEG)
+  ========================= */
+  function readFileAsDataURL(file){
+    return new Promise((resolve, reject)=>{
+      const fr = new FileReader();
+      fr.onload = ()=> resolve(String(fr.result || ''));
+      fr.onerror = ()=> reject(new Error('No se pudo leer el archivo.'));
+      fr.readAsDataURL(file);
+    });
+  }
+
+  function loadImageFromDataURL(dataUrl){
+    return new Promise((resolve, reject)=>{
+      const img = new Image();
+      img.onload = ()=> resolve(img);
+      img.onerror = ()=> reject(new Error('No se pudo cargar la imagen.'));
+      img.src = dataUrl;
+    });
+  }
+
+  async function fileToCompressedDataURL(file){
+    // Leer como dataURL
+    const rawDataUrl = await readFileAsDataURL(file);
+
+    // Intentar comprimir/redimensionar (si canvas disponible)
+    try{
+      const img = await loadImageFromDataURL(rawDataUrl);
+
+      const w = img.naturalWidth || img.width || 0;
+      const h = img.naturalHeight || img.height || 0;
+      if(!w || !h) return rawDataUrl;
+
+      const maxEdge = PHOTO_MAX_EDGE;
+      const scale = Math.min(1, maxEdge / Math.max(w, h));
+      const tw = Math.max(1, Math.round(w * scale));
+      const th = Math.max(1, Math.round(h * scale));
+
+      // Si ya es pequeña, devolver tal cual para preservar lo máximo posible
+      if(scale === 1){
+        return rawDataUrl;
+      }
+
+      const canvas = document.createElement('canvas');
+      canvas.width = tw;
+      canvas.height = th;
+      const ctx = canvas.getContext('2d', { alpha: false });
+      if(!ctx) return rawDataUrl;
+
+      ctx.drawImage(img, 0, 0, tw, th);
+
+      // JPEG para tamaño razonable (mismo “formato” de guardado: dataURL en JSON)
+      const out = canvas.toDataURL('image/jpeg', PHOTO_JPEG_QUALITY);
+      return out || rawDataUrl;
+    }catch(e){
+      return rawDataUrl;
+    }
+  }
+
+  function clampInt(n, min, max){
+    const x = parseInt(String(n), 10);
+    if(!Number.isFinite(x)) return min;
+    return Math.max(min, Math.min(max, x));
+  }
+
+  function getPhotoSlotsForField(fieldObj){
+    const cfg = (fieldObj && fieldObj.config && typeof fieldObj.config==='object') ? fieldObj.config : {};
+    const slots = clampInt(cfg.slots ?? PHOTO_SLOTS_DEFAULT, 1, 12);
+    return slots;
+  }
+
+  function openPhotoPicker({ multiple=false } = {}){
+    return new Promise((resolve)=>{
+      const inp = document.createElement('input');
+      inp.type = 'file';
+      inp.accept = 'image/*';
+      // En móvil, esto suele abrir cámara/galería; si el navegador soporta cámara directa, puede sugerirla
+      inp.setAttribute('capture', 'environment');
+      inp.multiple = !!multiple;
+      inp.onchange = ()=> {
+        const files = [...(inp.files || [])].filter(f => f && f.type && f.type.startsWith('image/'));
+        resolve(files);
+      };
+      inp.click();
+    });
+  }
+
+  function touchEdited(){
+    lastEditedISO = nowISO();
+    updateLastEditedUI();
+
+    const item = getCurrentItem();
+    if(item && item.data){
+      item.data.header = item.data.header || {};
+      item.data.header.lastEdited = lastEditedISO;
+    }
+  }
+
+  async function addPhotosToField(idx, { replaceAt = null } = {}){
+    const item = getCurrentItem();
+    if(!item || !item.data) return;
+
+    const fields = Array.isArray(item.data.fields) ? item.data.fields : [];
+    const f = fields[idx];
+    if(!f) return;
+
+    f.images = Array.isArray(f.images) ? f.images : [];
+    f.config = (f.config && typeof f.config==='object') ? f.config : {};
+
+    const slots = getPhotoSlotsForField(f);
+
+    // Si replaceAt está definido, solo reemplazar una ranura
+    const files = await openPhotoPicker({ multiple: replaceAt === null });
+    if(!files || files.length === 0) return;
+
+    try{
+      if(replaceAt !== null){
+        const pos = clampInt(replaceAt, 0, slots - 1);
+        const dataUrl = await fileToCompressedDataURL(files[0]);
+        f.images[pos] = dataUrl;
+      }else{
+        // Añadir tantas como quepan
+        for(const file of files){
+          if(f.images.filter(Boolean).length >= slots) break;
+          const dataUrl = await fileToCompressedDataURL(file);
+
+          // Buscar primer hueco libre (null/undefined/'')
+          let putAt = f.images.findIndex(x => !x);
+          if(putAt === -1) putAt = f.images.length;
+
+          // Asegurar que no exceda slots
+          if(putAt >= slots) break;
+
+          f.images[putAt] = dataUrl;
+        }
+      }
+
+      // Normalizar longitud
+      f.images = f.images.slice(0, slots);
+      while(f.images.length < slots) f.images.push('');
+
+      touchEdited();
+      loadLayoutFromData(item.data);
+    }catch(err){
+      alert('No se pudo procesar la imagen.');
+    }
+  }
+
+  function removePhotoFromField(idx, pos){
+    const item = getCurrentItem();
+    if(!item || !item.data) return;
+
+    const fields = Array.isArray(item.data.fields) ? item.data.fields : [];
+    const f = fields[idx];
+    if(!f) return;
+
+    f.images = Array.isArray(f.images) ? f.images : [];
+    const slots = getPhotoSlotsForField(f);
+
+    const p = clampInt(pos, 0, slots - 1);
+    if(p >= 0 && p < f.images.length){
+      f.images[p] = '';
+      // Mantener longitud fija
+      f.images = f.images.slice(0, slots);
+      while(f.images.length < slots) f.images.push('');
+      touchEdited();
+      loadLayoutFromData(item.data);
+    }
+  }
+
+  /* =========================
      RENDER
   ========================= */
   function renderEmptyDocument(){
@@ -674,22 +927,50 @@
     }
 
     if(type === 'photos'){
-      const images = Array.isArray(d.images) ? d.images : [];
+      const imagesRaw = Array.isArray(d.images) ? d.images : [];
+      const slots = clampInt(config.slots ?? PHOTO_SLOTS_DEFAULT, 1, 12);
+
+      // Normalizar a tamaño fijo para mantener el formato del formulario
+      const images = imagesRaw.slice(0, slots);
+      while(images.length < slots) images.push('');
+
+      const hint = config.hint ? String(config.hint) : 'Pulsa “Añadir foto(s)” o “Cambiar” en una ranura para cargar una fotografía desde el dispositivo.';
+
       return `
         <div class="field" data-type="photos" data-idx="${idx}">
           <div class="field-head">
             <div class="title">${escapeHTML(title)}</div>
           </div>
           <div class="field-body">
-            <div style="font-size:12px;font-weight:900; margin-bottom:8px;">
-              (Fotos desactivadas en este visor simplificado)
+            <div class="photos-toolbar">
+              <button class="btn" type="button" onclick="addPhotosToField(${idx})">Añadir foto(s)</button>
+              <div class="photos-hint">${escapeHTML(hint)}</div>
             </div>
+
             <div class="photos" id="grid_${idx}">
-              ${images.map((src)=>`
-                <div>
-                  <img src="${escapeAttr(src)}" alt="img">
-                </div>
-              `).join('')}
+              ${images.map((src, pos)=>{
+                const has = !!normalize(src);
+                if(has){
+                  return `
+                    <div class="photo-slot">
+                      <img src="${escapeAttr(src)}" alt="Foto ${pos+1}">
+                      <div class="slot-actions">
+                        <button type="button" onclick="addPhotosToField(${idx}, { replaceAt: ${pos} })">Cambiar</button>
+                        <button type="button" onclick="removePhotoFromField(${idx}, ${pos})">Borrar</button>
+                      </div>
+                    </div>
+                  `;
+                }
+                return `
+                  <div class="photo-slot">
+                    <div class="ph">Sin foto<br>(ranura ${pos+1}/${slots})</div>
+                    <div class="slot-actions">
+                      <button type="button" onclick="addPhotosToField(${idx}, { replaceAt: ${pos} })">Añadir</button>
+                      <button type="button" onclick="removePhotoFromField(${idx}, ${pos})" disabled>Borrar</button>
+                    </div>
+                  </div>
+                `;
+              }).join('')}
             </div>
           </div>
         </div>
@@ -737,6 +1018,18 @@
     // fields
     const mount = document.getElementById('fieldsMount');
     const fields = Array.isArray(data.fields) ? data.fields : [];
+
+    // Normalizar campos photo para mantener longitud fija antes de pintar
+    for(const f of fields){
+      if(f && normalize(f.type) === 'photos'){
+        f.config = (f.config && typeof f.config==='object') ? f.config : {};
+        const slots = getPhotoSlotsForField(f);
+        f.images = Array.isArray(f.images) ? f.images : [];
+        f.images = f.images.slice(0, slots);
+        while(f.images.length < slots) f.images.push('');
+      }
+    }
+
     mount.innerHTML = fields.map((d,i)=>fieldHTML(d,i)).join('');
 
     refreshAutoGrow();
@@ -746,17 +1039,6 @@
   /* =========================
      FILL HANDLERS (contenido)
   ========================= */
-  function touchEdited(){
-    lastEditedISO = nowISO();
-    updateLastEditedUI();
-
-    const item = getCurrentItem();
-    if(item && item.data){
-      item.data.header = item.data.header || {};
-      item.data.header.lastEdited = lastEditedISO;
-    }
-  }
-
   function onFieldChange(idx){
     const item = getCurrentItem();
     if(!item || !item.data) return;
@@ -773,6 +1055,7 @@
     if(type === 'text'){
       const v = fieldEl.querySelector('input[type="text"]')?.value ?? '';
       f.value = v;
+      touchEdited();
     }
 
     if(type === 'radio'){
@@ -781,9 +1064,10 @@
       const obs = fieldEl.querySelector('textarea')?.value ?? '';
       f.obs = obs;
       f.config = (f.config && typeof f.config==='object') ? f.config : {};
+      touchEdited();
     }
 
-    touchEdited();
+    // photos se gestionan con addPhotosToField/removePhotoFromField
   }
 
   /* =========================
@@ -1033,6 +1317,17 @@
       if(code && !tags.some(t=>normalize(t).toLowerCase()===code.toLowerCase())) tags.unshift(code);
 
       layout.header.logo = FIXED_LOGO_URL;
+
+      // Normalizar campos photos (slots fijos)
+      for(const f of layout.fields){
+        if(f && normalize(f.type)==='photos'){
+          f.config = (f.config && typeof f.config==='object') ? f.config : {};
+          const slots = getPhotoSlotsForField(f);
+          f.images = Array.isArray(f.images) ? f.images : [];
+          f.images = f.images.slice(0, slots);
+          while(f.images.length < slots) f.images.push('');
+        }
+      }
 
       layout.meta = Object.assign({}, layoutMeta, rawMeta, {
         category,
