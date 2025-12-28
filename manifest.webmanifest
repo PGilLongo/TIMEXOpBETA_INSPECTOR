@@ -1,0 +1,25 @@
+{
+  "name": "Plataforma Inspecciones Bomberos",
+  "short_name": "Inspecciones",
+  "description": "Plataforma de inspecciones de bomberos Puy Du Fou España",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#c0c0c0",
+  "theme_color": "#c0c0c0",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

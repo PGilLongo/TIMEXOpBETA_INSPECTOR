@@ -1,0 +1,23 @@
+{
+  "appName": "Plataforma Inspecciones Bomberos",
+  "shortName": "Inspecciones",
+  "version": "1.0.0",
+  "routes": {
+    "db": "base_de_datos.html",
+    "inspector": "inspector.html",
+    "admin": "administrador.html"
+  },
+  "cache": {
+    "strategy": "offline-first",
+    "coreAssets": [
+      "./",
+      "./index.html",
+      "./manifest.webmanifest",
+      "./icon-192.png",
+      "./icon-512.png",
+      "./base_de_datos.html",
+      "./inspector.html",
+      "./administrador.html"
+    ]
+  }
+}
