@@ -487,27 +487,6 @@
     .photo-slot .slot-actions,
     .photos-toolbar{ display:none !important; }
   }
-
-  /* --- Print helpers: avoid truncation in PDF export --- */
-  .printtext{ display:none; }
-
-  @media print{
-    .field-body.textline input{ display:none !important; }
-    .field-body.textline .printtext{
-      display:block !important;
-      width:100%;
-      border:2px solid var(--border);
-      padding:10px;
-      font-size:16px;
-      line-height:1.25;
-      box-sizing:border-box;
-      white-space:pre-wrap;
-      word-break:break-word;
-      min-height:44px;
-    }
-    textarea{ overflow:visible !important; }
-  }
-
 </style>
 
 <!-- Firebase (compat, sin bundler) -->
@@ -953,44 +932,6 @@ window.addEventListener('unhandledrejection', (e)=>__showGlobalErr('Promesa rech
   function refreshAutoGrow(){
     document.querySelectorAll('textarea.autogrow').forEach(autoGrow);
   }
-
-  // --- Print helpers: replace single-line inputs with wrapping blocks for PDF/print ---
-  function prepareForPrint(){
-    const swaps = [];
-
-    // Convert text inputs (single line) into wrapping blocks during print
-    document.querySelectorAll('.field-body.textline input[type="text"]').forEach(inp=>{
-      const parent = inp.parentElement;
-      if(!parent) return;
-
-      // Create or reuse the print block
-      let block = parent.querySelector('.printtext');
-      if(!block){
-        block = document.createElement('div');
-        block.className = 'printtext';
-        parent.appendChild(block);
-      }
-
-      const val = (inp.value ?? '').toString();
-      block.textContent = val.length ? val : '\u00A0';
-
-      // Hide input visually for print, keep it for restore
-      const prevDisplay = inp.style.display;
-      inp.style.display = 'none';
-
-      swaps.push(()=>{ inp.style.display = prevDisplay; if(block && block.parentNode) block.parentNode.removeChild(block); });
-    });
-
-    // Also ensure all autogrow textareas expand to their full scrollHeight
-    document.querySelectorAll('textarea.autogrow').forEach(t=>{
-      try{ autoGrow(t); }catch(_){}
-    });
-
-    return function cleanup(){
-      swaps.reverse().forEach(fn=>{ try{ fn(); }catch(_){} });
-    };
-  }
-
   document.addEventListener('input', (e)=>{
     if(e.target && e.target.matches('textarea.autogrow')) autoGrow(e.target);
   });
@@ -1101,20 +1042,6 @@ window.addEventListener('unhandledrejection', (e)=>__showGlobalErr('Promesa rech
       alert('No hay formulario abierto.');
       return;
     }
-
-    const oldTitle = document.title;
-    document.title = `${item.category} - ${item.form}`;
-
-    // Prepare dynamic elements for print (PDF) so text never gets truncated
-    refreshAutoGrow();
-    const cleanup = prepareForPrint();
-
-    window.print();
-
-    // Restore UI
-    try{ cleanup && cleanup(); }catch(_){}
-    document.title = oldTitle;
-  }
 
     const oldTitle = document.title;
     document.title = `${item.category} - ${item.form}`;
