@@ -499,14 +499,9 @@
 <div class="topbar">
   <div class="row">
     <div class="group">
-      <button class="btn primary" type="button" onclick="importJsonFiles()">Importar JSON(s)</button>
       <button id="btnExportPDF" class="btn" type="button" onclick="exportPDF()" disabled>Exportar PDF</button>
-      <button id="btnExportJSON" class="btn" type="button" onclick="exportCloudInfoBBDD()" disabled>Exportar JSON (BBDD)</button>
       <button id="btnSaveInspection" class="btn" type="button" onclick="saveCurrentInspection()" disabled>Guardar inspección</button>
       <button id="btnResetForm" class="btn" type="button" onclick="resetCurrentForm()" disabled>Reiniciar formulario</button>
-    </div>
-    <div class="group">
-      <button class="btn" type="button" onclick="clearLoaded()">Vaciar plantillas</button>
     </div>
   </div>
 </div>
@@ -1007,11 +1002,19 @@ window.addEventListener('unhandledrejection', (e)=>__showGlobalErr('Promesa rech
     const hasInspections = inspections.length > 0;
     const btnRead = document.getElementById('btnReadTag');
 
-    btnRead.disabled = !hasDB;
-    document.getElementById('btnExportPDF').disabled = !hasCurrent;
-    document.getElementById('btnExportJSON').disabled = !hasInspections;
-    document.getElementById('btnResetForm').disabled = !hasCurrent;
-    document.getElementById('btnSaveInspection').disabled = !hasCurrent;
+    if(btnRead) btnRead.disabled = !hasDB;
+
+    const elPDF = document.getElementById('btnExportPDF');
+    if(elPDF) elPDF.disabled = !hasCurrent;
+
+    const elJSON = document.getElementById('btnExportJSON');
+    if(elJSON) elJSON.disabled = !hasInspections;
+
+    const elReset = document.getElementById('btnResetForm');
+    if(elReset) elReset.disabled = !hasCurrent;
+
+    const elSave = document.getElementById('btnSaveInspection');
+    if(elSave) elSave.disabled = !hasCurrent;
 
     updateReadTagButtonText();
   }
