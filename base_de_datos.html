@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>Base de datos</title>
 <style>
   :root{
@@ -11,17 +11,20 @@
     --w95-shadow:#404040;
     --w95-blue:#000080;
     --w95-hilite:#dfdfdf;
+    --text:#000000;
+    --surface:#ffffff;
   }
 
   *{ box-sizing:border-box; }
-
   html,body{ height:100%; }
   body{
     margin:0;
     font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
     background: var(--w95-bg);
-    color:#000;
+    color: var(--text);
   }
+
+  button, input, select{ font-family: inherit; }
 
   .window{
     border-top:2px solid var(--w95-light);
@@ -29,13 +32,19 @@
     border-right:2px solid var(--w95-shadow);
     border-bottom:2px solid var(--w95-shadow);
     background: var(--w95-bg);
-    box-shadow: 2px 2px 0 rgba(0,0,0,.2);
+  }
+
+  .panel.window{
+    width:100%;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
   }
 
   .titlebar{
     background: var(--w95-blue);
     color:#fff;
-    padding:4px 8px;
+    padding:6px 10px;
     font-weight:800;
     font-size:13px;
     display:flex;
@@ -48,88 +57,12 @@
     user-select:none;
   }
 
-  .content{ padding:12px; }
-
-  .toolbar{
-    display:flex;
-    flex-wrap:wrap;
-    gap:8px;
-    align-items:center;
-    justify-content:space-between;
-    margin-top:10px;
-  }
-
-  .group{
-    display:flex;
-    gap:8px;
-    align-items:center;
-    flex-wrap:wrap;
-    min-width:0;
-  }
-
-  label{
-    display:block;
-    font-size:12px;
-    margin-bottom:4px;
-    font-weight:700;
-  }
-
-  input[type="text"],
-  input[type="datetime-local"],
-  select{
+  .content{
+    padding:12px;
+    flex:1;
+    max-width:1200px;
     width:100%;
-    max-width: 100%;
-    min-width: 0;
-    padding:6px 8px;
-    border-top:2px solid var(--w95-shadow);
-    border-left:2px solid var(--w95-shadow);
-    border-right:2px solid var(--w95-light);
-    border-bottom:2px solid var(--w95-light);
-    background:#fff;
-    font-size:13px;
-    font-family: inherit;
-  }
-
-  select{ width: 100%; }
-
-  button{
-    border-top:2px solid var(--w95-light);
-    border-left:2px solid var(--w95-light);
-    border-right:2px solid var(--w95-shadow);
-    border-bottom:2px solid var(--w95-shadow);
-    background: var(--w95-bg);
-    padding:6px 10px;
-    font-weight:800;
-    font-size:12px;
-    font-family: inherit;
-    cursor:pointer;
-  }
-  button:active{
-    border-top:2px solid var(--w95-shadow);
-    border-left:2px solid var(--w95-shadow);
-    border-right:2px solid var(--w95-light);
-    border-bottom:2px solid var(--w95-light);
-  }
-  button.primary{ background: var(--w95-hilite); }
-  button.danger{ background:#ffd6d6; }
-
-  .workspace{
-    width:100%;
-    margin:0;
-    padding:0;
-  }
-
-  .panel{ padding:0; }
-
-  .panel.window{
-    width:100%;
-    min-height:100vh;
-    box-shadow:none;
-  }
-
-  h3{
-    margin:0 0 10px;
-    font-size:14px;
+    margin:0 auto;
   }
 
   .box{
@@ -139,7 +72,54 @@
     border-left:2px solid var(--w95-shadow);
     border-right:2px solid var(--w95-light);
     border-bottom:2px solid var(--w95-light);
-    margin-bottom:10px;
+    margin:10px 0 12px;
+  }
+
+  label{
+    display:block;
+    font-size:12px;
+    margin-bottom:4px;
+    font-weight:800;
+  }
+
+  input[type="text"],
+  input[type="datetime-local"],
+  select{
+    width:100%;
+    max-width:100%;
+    min-width:0;
+    padding:8px 10px;
+    border-top:2px solid var(--w95-shadow);
+    border-left:2px solid var(--w95-shadow);
+    border-right:2px solid var(--w95-light);
+    border-bottom:2px solid var(--w95-light);
+    background: var(--surface);
+    font-size:13px;
+  }
+
+  button{
+    border-top:2px solid var(--w95-light);
+    border-left:2px solid var(--w95-light);
+    border-right:2px solid var(--w95-shadow);
+    border-bottom:2px solid var(--w95-shadow);
+    background: var(--w95-bg);
+    padding:8px 12px;
+    font-weight:800;
+    font-size:12px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  button:active{
+    border-top:2px solid var(--w95-shadow);
+    border-left:2px solid var(--w95-shadow);
+    border-right:2px solid var(--w95-light);
+    border-bottom:2px solid var(--w95-light);
+  }
+  button.primary{ background: var(--w95-hilite); }
+  button.danger{ background:#ffd6d6; }
+  button:disabled{
+    opacity:.6;
+    cursor:not-allowed;
   }
 
   .gridFilters{
@@ -155,33 +135,45 @@
   .col-4{ grid-column: span 4; }
   .col-3{ grid-column: span 3; }
 
-  @media (max-width: 900px){
-    .col-6, .col-4, .col-3{ grid-column: span 12; }
-    input[type="text"], input[type="datetime-local"], select{ width: 100%; max-width: 100%; }
+  .rowActions{
+    display:flex;
+    gap:10px;
+    margin-top:10px;
+    align-items:center;
+    flex-wrap:wrap;
   }
+
+  .muted{ opacity:.75; font-size:12px; }
 
   .histEmpty{
     padding:14px;
-    background: #fff;
+    background: var(--surface);
     border-top:2px solid var(--w95-shadow);
     border-left:2px solid var(--w95-shadow);
     border-right:2px solid var(--w95-light);
     border-bottom:2px solid var(--w95-light);
     font-size:13px;
+  }
+
+  .tableWrap{
+    width:100%;
+    overflow:auto;
+    border-top:2px solid var(--w95-shadow);
+    border-left:2px solid var(--w95-shadow);
+    border-right:2px solid var(--w95-light);
+    border-bottom:2px solid var(--w95-light);
+    background: var(--surface);
   }
 
   table.histTable{
     width:100%;
     border-collapse:collapse;
-    background:#fff;
-    border-top:2px solid var(--w95-shadow);
-    border-left:2px solid var(--w95-shadow);
-    border-right:2px solid var(--w95-light);
-    border-bottom:2px solid var(--w95-light);
+    background: var(--surface);
     font-size:13px;
+    min-width:620px;
   }
   table.histTable th, table.histTable td{
-    padding:8px 10px;
+    padding:10px 10px;
     border-bottom:1px solid #d0d0d0;
     text-align:left;
     vertical-align:middle;
@@ -190,10 +182,11 @@
     background: var(--w95-hilite);
     font-size:12px;
     user-select:none;
+    position:sticky;
+    top:0;
+    z-index:1;
   }
   table.histTable tr:hover td{ background:#f6f6ff; }
-
-  .muted{ opacity:.75; font-size:12px; }
 
   .pager{
     margin-top:10px;
@@ -205,7 +198,7 @@
   }
   .pager .meta{
     font-size:12px;
-    opacity:.85;
+    opacity:.9;
   }
   .pager .controls{
     display:flex;
@@ -216,7 +209,7 @@
   .pill{
     display:inline-block;
     padding:4px 8px;
-    background:#fff;
+    background: var(--surface);
     border-top:2px solid var(--w95-shadow);
     border-left:2px solid var(--w95-shadow);
     border-right:2px solid var(--w95-light);
@@ -224,77 +217,76 @@
     font-size:12px;
     font-weight:800;
   }
-</style>
 
-<!-- 1) Firebase (compat, sin bundler) -->
+  @media (max-width: 900px){
+    .col-6, .col-4, .col-3{ grid-column: span 12; }
+  }
+
+  @media (max-width: 420px){
+    .content{ padding:10px; }
+    button{ width:100%; }
+    .pager .controls button{ width:auto; }
+  }
+</style>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 </head>
 
 <body>
-<div class="workspace">
-  <div class="panel window">
-    <div class="titlebar">
-      <div>Base de datos</div>
-      </div>
-    <div class="content">
+<div class="panel window">
+  <div class="titlebar">
+    <div>Base de datos</div>
+  </div>
 
-      <div class="box" style="margin-top:10px;">
-        <div class="gridFilters">
-          <div class="col-12">
-            <label>Búsqueda rápida</label>
-            <input id="histSearch" type="text" placeholder="Filtra por texto…" oninput="resetToFirstPageAndRender()" />
-            <div style="display:flex; gap:10px; margin-top:10px; align-items:center;">
-              <button type="button" onclick="runSearch()">Buscar</button>
-              <button type="button" onclick="loadAllFromCloud()">Cargar todas</button>
-          </div>
-
-          <div class="col-3">
-            <label>Filtro: categoría</label>
-            <select id="advCategory" onchange="resetToFirstPageAndRender()">
-              <option value="">(Todas)</option>
-            </select>
-          </div>
-
-          <div class="col-3">
-            <label>Filtro: formulario contiene</label>
-            <input id="advForm" type="text" placeholder="Ej: Checklist…" oninput="resetToFirstPageAndRender()" />
-          </div>
-
-          <div class="col-3">
-            <label>Fecha desde</label>
-            <input id="advFrom" type="datetime-local" onchange="resetToFirstPageAndRender()" />
-          </div>
-
-          <div class="col-3">
-            <label>Fecha hasta</label>
-            <input id="advTo" type="datetime-local" onchange="resetToFirstPageAndRender()" />
-          </div>
-
-          <div class="col-12" style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
-            <button type="button" onclick="clearAdvancedFilters()">Limpiar filtros</button>
-            <span class="muted">Mostrando <b>50</b> registros por página.</span>
+  <div class="content">
+    <div class="box">
+      <div class="gridFilters">
+        <div class="col-12">
+          <label for="histSearch">Búsqueda rápida</label>
+          <input id="histSearch" type="text" placeholder="Filtra por texto…" autocomplete="off" inputmode="search" />
+          <div class="rowActions">
+            <button id="btnBuscar" type="button">Buscar</button>
+            <button id="btnCargarTodas" type="button">Cargar todas</button>
           </div>
         </div>
-      </div>
 
-      <div id="histList"></div>
+        <div class="col-3">
+          <label for="advCategory">Filtro: categoría</label>
+          <select id="advCategory">
+            <option value="">(Todas)</option>
+          </select>
+        </div>
+
+        <div class="col-3">
+          <label for="advForm">Filtro: formulario contiene</label>
+          <input id="advForm" type="text" placeholder="Ej: Checklist…" autocomplete="off" />
+        </div>
+
+        <div class="col-3">
+          <label for="advFrom">Fecha desde</label>
+          <input id="advFrom" type="datetime-local" />
+        </div>
+
+        <div class="col-3">
+          <label for="advTo">Fecha hasta</label>
+          <input id="advTo" type="datetime-local" />
+        </div>
+
+        <div class="col-12" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <button id="btnLimpiar" type="button">Limpiar filtros</button>
+          <span class="muted">Mostrando <b>50</b> registros por página.</span>
+        </div>
+      </div>
     </div>
+
+    <div id="histList" aria-live="polite"></div>
   </div>
 </div>
 
 <script>
-/* __GLOBAL_ERROR_WIRED__ */
-window.addEventListener('error', (e)=>{
-  console.error('JS error:', e.error || e.message, e);
-});
-window.addEventListener('unhandledrejection', (e)=>{
-  console.error('Unhandled promise rejection:', e.reason);
-});
+window.addEventListener('error', (e)=>{ try{ console.error('JS error:', e.error || e.message, e); }catch(_){} });
+window.addEventListener('unhandledrejection', (e)=>{ try{ console.error('Unhandled promise rejection:', e.reason); }catch(_){} });
 
-/**
- * 2) Firebase config (literal)
- */
 const firebaseConfig = {
   apiKey: "AIzaSyBLP0yGc_Yh0nKGNYbPcYabTg25LDw2wco",
   authDomain: "inspector-b4f41.firebaseapp.com",
@@ -304,66 +296,19 @@ const firebaseConfig = {
   appId: "1:333394046622:web:caa18c6f1d341b0a97158f"
 };
 
-
-
-  function fsErrShort(e){
-    try{
-      const code = e && (e.code || e.name) ? String(e.code || e.name) : '';
-      const msg = e && e.message ? String(e.message) : String(e||'');
-      const out = (code && msg) ? (code + ' — ' + msg) : (code || msg);
-      return out.trim() || 'error';
-    }catch(_){ return 'error'; }
-  }
-  function fsRulesHint(e){
-    const s = (e && (e.code || '') ? String(e.code) : '') + ' ' + (e && e.message ? String(e.message) : '');
-    if(/permission-denied/i.test(s)){
-      return "\n\nParece un problema de REGLAS: si no usas login, Firestore debe permitir lecturas/escrituras públicas (o habilitar Auth).";
-    }
-    if(/failed-precondition/i.test(s) && /index/i.test(s)){
-      return "\n\nParece faltar un índice compuesto en Firestore (consola -> Firestore -> Indexes).";
-    }
-    if(/unavailable|network|offline|fetch/i.test(s)){
-      return "\n\nParece un problema de conexión/red o bloqueo del navegador.";
-    }
-    return "";
-  }
-
-/**
- * Firestore: colección persistente
- * 3) Estructura en templates_v1:
- * DocID: <id>
- * {
- *   name: string,
- *   category: string,
- *   code: string,
- *   createdAt: ISOstring,
- *   updatedAt: ISOstring,
- *   data: object
- * }
- */
 const COLLECTION_NAME = 'inspections_v1';
 const INS_COLLECTION = COLLECTION_NAME;
 const PAGE_SIZE = 50;
 
 let __page = 1;
-
-// Cache en memoria (la fuente de verdad SIEMPRE es Firestore)
 let __dbCache = [];
 let __cacheLoaded = false;
-let __loadedAll = false; // si se ha hecho "Cargar todas"
+let __loadedAll = false;
 
-let __fire = {
-  app: null,
-  db: null,
-  col: null
-};
+let __fire = { app: null, db: null, col: null };
 
-function nowISO(){
-  try{ return new Date().toISOString(); }catch(e){ return ''+Date.now(); }
-}
-function makeId(){
-  return 'id_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10);
-}
+function nowISO(){ try{ return new Date().toISOString(); }catch(e){ return ''+Date.now(); } }
+function makeId(){ return 'id_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 10); }
 function normalizeStr(s){ return String(s ?? '').trim(); }
 function normalizeLower(s){ return normalizeStr(s).toLowerCase(); }
 
@@ -373,36 +318,15 @@ function stableSerialize(val){
   if(t === 'string') return JSON.stringify(val);
   if(t === 'number' || t === 'boolean') return String(val);
   if(t !== 'object') return JSON.stringify(String(val));
-  if(Array.isArray(val)){
-    return '[' + val.map(stableSerialize).join(',') + ']';
-  }
+  if(Array.isArray(val)) return '[' + val.map(stableSerialize).join(',') + ']';
   const keys = Object.keys(val).sort((a,b)=> a.localeCompare(b, 'en', { sensitivity:'base' }));
   return '{' + keys.map(k => JSON.stringify(k)+':'+stableSerialize(val[k])).join(',') + '}';
 }
 
 function hashString(str){
-  // DJB2 (32-bit) for speed + determinism
   let h = 5381;
-  for(let i=0;i<str.length;i++){
-    h = ((h << 5) + h) ^ str.charCodeAt(i);
-  }
+  for(let i=0;i<str.length;i++) h = ((h << 5) + h) ^ str.charCodeAt(i);
   return (h >>> 0).toString(16).padStart(8,'0');
-}
-
-function computeFingerprint(category, form, lastEditedISO, raw){
-  try{
-    const layout = extractLayout(raw) || raw || {};
-    // Evita que pequeñas diferencias irrelevantes rompan el hash
-    const payload = {
-      category: normalizeStr(category),
-      form: normalizeStr(form),
-      lastEditedISO: normalizeStr(lastEditedISO),
-      layout: layout
-    };
-    return hashString(stableSerialize(payload));
-  }catch(e){
-    return hashString(String(Date.now()) + Math.random());
-  }
 }
 
 function hasLayoutShape(obj){
@@ -417,9 +341,23 @@ function extractLayout(raw){
   return null;
 }
 
+function computeFingerprint(category, form, lastEditedISO, raw){
+  try{
+    const layout = extractLayout(raw) || raw || {};
+    const payload = {
+      category: normalizeStr(category),
+      form: normalizeStr(form),
+      lastEditedISO: normalizeStr(lastEditedISO),
+      layout: layout
+    };
+    return hashString(stableSerialize(payload));
+  }catch(e){
+    return hashString(String(Date.now()) + Math.random());
+  }
+}
+
 function normalizeImportedRecord(raw){
   if(!raw || typeof raw !== 'object') return null;
-
   const layout = extractLayout(raw);
   if(!layout) return null;
 
@@ -429,11 +367,9 @@ function normalizeImportedRecord(raw){
 
   const category = normalizeStr(raw.category || metaRaw.category || metaLayout.category || '');
   const form = normalizeStr(raw.form || raw.name || metaRaw.name || metaRaw.form || metaLayout.name || metaLayout.form || '');
-
   if(!category || !form) return null;
 
   const tagCode = normalizeStr(raw.tag || raw.code || metaRaw.tag || metaRaw.code || metaLayout.tag || metaLayout.code || '');
-
   const lastEditedISO = normalizeStr(
     raw.lastEditedISO ||
     raw.lastEdited ||
@@ -453,15 +389,6 @@ function normalizeImportedRecord(raw){
   };
 }
 
-/**
- * Adaptación:
- * - UI trabaja con registros "inspecciones" {id, category, form, lastEditedISO, fingerprint, raw}
- * - Firestore guarda "templates" {id, name, category, code, createdAt, updatedAt, data}
- * Mapeamos:
- *   name = form
- *   code = fingerprint (TAG/código)
- *   data = raw (objeto serializado que ya existía)
- */
 function recordToTemplate(rec, existingTpl){
   const id = normalizeStr(rec?.id) || normalizeStr(existingTpl?.id) || makeId();
   const createdAt = normalizeStr(existingTpl?.createdAt) || nowISO();
@@ -470,8 +397,24 @@ function recordToTemplate(rec, existingTpl){
   const name = normalizeStr(rec?.form || existingTpl?.name || '');
   const code = normalizeStr(rec?.fingerprint || existingTpl?.code || '');
   const data = (rec && rec.raw && typeof rec.raw === 'object') ? rec.raw : ((existingTpl && existingTpl.data && typeof existingTpl.data === 'object') ? existingTpl.data : (rec?.raw || rec || {}));
-
   return { id, name, category, code, createdAt, updatedAt, data };
+}
+
+function toISOFromAny(v){
+  if(!v) return '';
+  if(typeof v === 'string') return v;
+  if(v instanceof Date) return v.toISOString();
+  try{
+    if(typeof v.toDate === 'function'){
+      const d = v.toDate();
+      if(d instanceof Date && !isNaN(d.getTime())) return d.toISOString();
+    }
+  }catch(_){}
+  try{
+    const d2 = new Date(v);
+    if(!isNaN(d2.getTime())) return d2.toISOString();
+  }catch(_){}
+  return '';
 }
 
 function templateToRecord(tpl){
@@ -480,13 +423,10 @@ function templateToRecord(tpl){
   const form = normalizeStr(tpl?.name || '');
   const fingerprint = normalizeStr(tpl?.code || '');
   const raw = (tpl && tpl.data && typeof tpl.data === 'object') ? tpl.data : {};
-
-  // lastEditedISO: si viene en data, úsalo; si no, usa updatedAt (o createdAt)
   const lastEditedISO =
     normalizeStr(raw?.lastEditedISO || raw?.lastEdited) ||
-    normalizeStr(tpl?.updatedAt || tpl?.createdAt) ||
+    normalizeStr(toISOFromAny(tpl?.updatedAtTs) || toISOFromAny(tpl?.updatedAt) || toISOFromAny(tpl?.createdAt)) ||
     nowISO();
-
   return { id, category, form, lastEditedISO, fingerprint, raw };
 }
 
@@ -497,7 +437,6 @@ function ensureDbShape(items){
   for(const it of (Array.isArray(items) ? items : [])){
     if(!it || typeof it !== 'object') continue;
 
-    // Si ya viene con forma de record (tiene category/form/raw), pásalo
     if(('category' in it) || ('form' in it) || ('raw' in it)){
       const obj = { ...it };
 
@@ -524,12 +463,10 @@ function ensureDbShape(items){
       continue;
     }
 
-    // Si es un objeto "layout" o export, intenta normalizar
     const wrapped = normalizeImportedRecord(it);
     if(wrapped){ out.push(wrapped); changed = true; }
   }
 
-  // Deduplicación defensiva por fingerprint (code)
   const seen = new Set();
   const unique = [];
   for(const it of out){
@@ -542,19 +479,12 @@ function ensureDbShape(items){
   return { items: unique, changed };
 }
 
-/* =========================
-   4) Operaciones Firestore
-   ========================= */
-
 function assertFirestoreReady(){
   if(!__fire.db || !__fire.col) throw new Error('Firestore no inicializado.');
 }
 
-/**
- * fetchAllTemplates(): leer todos los docs de "templates_v1"
- */
 async function fetchAllInspections(){
-  if(!__fire.db) throw new Error('Firestore no inicializado.');
+  assertFirestoreReady();
   const snap = await __fire.db.collection(INS_COLLECTION).get();
   const out = [];
   snap.forEach(doc=>{
@@ -564,36 +494,33 @@ async function fetchAllInspections(){
   });
   return out;
 }
-/**
- * fetchLatestInspections(limit): carga últimas N inspecciones (orden por updatedAt/createdAt si existe)
- */
+
 async function fetchLatestInspections(limit){
-  if(!__fire.db) throw new Error('Firestore no inicializado.');
+  assertFirestoreReady();
   const lim = Math.max(1, Number(limit||200));
-  // Preferimos updatedAt/createdAt si existen (strings ISO). Si no, caemos a get() simple.
   try{
-    return await __fire.db.collection(INS_COLLECTION).orderBy('updatedAt', 'desc').limit(lim).get()
-      .then(snap=>{
-        const out=[]; snap.forEach(doc=>{ const d=doc.data()||{}; if(!d.id) d.id=doc.id; out.push(d);}); return out;
-      });
-  }catch(e1){
+    return await __fire.db.collection(INS_COLLECTION).orderBy('updatedAtTs', 'desc').limit(lim).get().then(snap=>{
+      const out=[]; snap.forEach(doc=>{ const d=doc.data()||{}; if(!d.id) d.id=doc.id; out.push(d); }); return out;
+    });
+  }catch(e0){
     try{
-      return await __fire.db.collection(INS_COLLECTION).orderBy('createdAt', 'desc').limit(lim).get()
-        .then(snap=>{
-          const out=[]; snap.forEach(doc=>{ const d=doc.data()||{}; if(!d.id) d.id=doc.id; out.push(d);}); return out;
+      return await __fire.db.collection(INS_COLLECTION).orderBy('updatedAt', 'desc').limit(lim).get().then(snap=>{
+        const out=[]; snap.forEach(doc=>{ const d=doc.data()||{}; if(!d.id) d.id=doc.id; out.push(d); }); return out;
+      });
+    }catch(e1){
+      try{
+        return await __fire.db.collection(INS_COLLECTION).orderBy('createdAt', 'desc').limit(lim).get().then(snap=>{
+          const out=[]; snap.forEach(doc=>{ const d=doc.data()||{}; if(!d.id) d.id=doc.id; out.push(d); }); return out;
         });
-    }catch(e2){
-      // fallback
-      return await fetchAllInspections();
+      }catch(e2){
+        return await fetchAllInspections();
+      }
     }
   }
 }
 
-/**
- * fetchInspectionsByCode(code): búsqueda exacta por TAG/código
- */
 async function fetchInspectionsByCode(code){
-  if(!__fire.db) throw new Error('Firestore no inicializado.');
+  assertFirestoreReady();
   const c = String(code||'').trim();
   if(!c) return [];
   const snap = await __fire.db.collection(INS_COLLECTION).where('code', '==', c).get();
@@ -606,34 +533,24 @@ async function fetchInspectionsByCode(code){
   return out;
 }
 
-
-/**
- * upsertTemplate(tpl): set(doc).merge(true) con payload anterior
- */
 async function upsertInspectionRaw(raw){
-  if(!__fire.db) throw new Error('Firestore no inicializado.');
+  assertFirestoreReady();
   if(!raw || typeof raw !== 'object') throw new Error('invalid_payload');
   const id = String(raw.id || makeId());
-  const payload = { ...raw, id, updatedAt: firebase.firestore.FieldValue.serverTimestamp() };
+  const createdAt = normalizeStr(raw.createdAt) || nowISO();
+  const payload = {
+    ...raw,
+    id,
+    createdAt,
+    updatedAt: nowISO(),
+    updatedAtTs: firebase.firestore.FieldValue.serverTimestamp()
+  };
   await __fire.db.collection(INS_COLLECTION).doc(id).set(payload, { merge:true });
   return id;
 }
 
-/**
- * deleteTemplate(id): borrar doc
- */
-async function deleteInspection(id){
-  if(!__fire.db) throw new Error('Firestore no inicializado.');
-  await __fire.db.collection(INS_COLLECTION).doc(String(id)).delete();
-  return true;
-}
-
-/**
- * deleteAllTemplates(): borrar todos los docs (batch)
- * (en chunks de 450 para ir holgados bajo el límite de 500)
- */
 async function deleteAllInspections(){
-  if(!__fire.db) throw new Error('Firestore no inicializado.');
+  assertFirestoreReady();
   const snap = await __fire.db.collection(INS_COLLECTION).get();
   const docs = [];
   snap.forEach(d=>docs.push(d));
@@ -648,9 +565,6 @@ async function deleteAllInspections(){
   return true;
 }
 
-/**
- * findByCode(code): query where('code','==',code).limit(1)
- */
 async function findByCode(code){
   assertFirestoreReady();
   const c = normalizeStr(code);
@@ -661,19 +575,16 @@ async function findByCode(code){
   return { id: doc.id, ...(doc.data() || {}) };
 }
 
-/* =========================
-   UI + Lógica (sin localStorage)
-   ========================= */
-
 async function loadDB(){
-  // la fuente de verdad es Firestore (inspecciones)
   const rows = await fetchLatestInspections(200);
   const records = [];
   for(const raw of rows){
-    const rec = normalizeImportedRecord((raw && raw.data && typeof raw.data==='object') ? raw.data : raw);
+    const base = (raw && raw.data && typeof raw.data==='object') ? raw.data : raw;
+    const rec = normalizeImportedRecord(base);
     if(rec){
       rec.id = String(raw.id || rec.id);
-      if(raw.fingerprint) rec.fingerprint = String(raw.fingerprint);
+      rec.fingerprint = normalizeStr(raw.code || rec.fingerprint);
+      rec.lastEditedISO = normalizeStr(rec.lastEditedISO || toISOFromAny(raw.updatedAtTs) || raw.updatedAt || raw.createdAt || nowISO());
       records.push(rec);
     }
   }
@@ -683,135 +594,9 @@ async function loadDB(){
   return __dbCache;
 }
 
-function getCache(){
-  return Array.isArray(__dbCache) ? __dbCache : [];
-}
+function getCache(){ return Array.isArray(__dbCache) ? __dbCache : []; }
 
-async function refreshCache(){
-  await loadDB();
-}
-
-/**
- * Cargar todas las inspecciones (Firestore) y permitir filtrado local completo.
- * Ojo: si hay MUCHAS, puede tardar.
- */
-async function loadAllFromCloud(){
-  if(!confirm('Esto cargará TODAS las inspecciones desde Firestore (puede tardar). ¿Continuar?')) return;
-  const wrap = document.getElementById('histList');
-  try{
-    if(wrap){
-      wrap.innerHTML = '<div class="histEmpty">Cargando todas desde Firestore…</div>';
-    }
-    const rows = await fetchAllInspections();
-    const records = [];
-    for(const raw of rows){
-      const rec = normalizeImportedRecord((raw && raw.data && typeof raw.data==='object') ? raw.data : raw);
-      if(rec){
-        rec.id = String(raw.id || rec.id);
-        records.push(rec);
-      }
-    }
-    __dbCache = ensureDbShape(records).items;
-    __cacheLoaded = true;
-    __loadedAll = true;
-    __page = 1;
-    refreshCategoryOptions();
-    await renderList();
-  }catch(e){
-    console.error(e);
-    alert('No se pudo cargar todo.\n' + (e && (e.message||e.toString()) ? (e.message||e.toString()) : ''));
-  }
-}
-
-/**
- * Buscar por TAG/código (exacto) en Firestore.
- * Si no encuentra y no se ha cargado todo, ofrece cargar todo y filtrar por texto.
- */
-async function runSearch(){
-  const q = String((document.getElementById('histSearch')||{}).value || '').trim();
-  if(!q){
-    // si no hay query, vuelve a "últimas"
-    __cacheLoaded = false;
-    __loadedAll = false;
-    __page = 1;
-    await renderList();
-    return;
-  }
-
-  const wrap = document.getElementById('histList');
-  try{
-    if(wrap){
-      wrap.innerHTML = '<div class="histEmpty">Buscando en Firestore…</div>';
-    }
-
-    // 1) Búsqueda exacta (rápida)
-    const rows = await fetchInspectionsByCode(q);
-
-    if(rows && rows.length){
-      const records = [];
-      for(const raw of rows){
-        const rec = normalizeImportedRecord((raw && raw.data && typeof raw.data==='object') ? raw.data : raw);
-        if(rec){
-          rec.id = String(raw.id || rec.id);
-          records.push(rec);
-        }
-      }
-      __dbCache = ensureDbShape(records).items;
-      __cacheLoaded = true;
-      __page = 1;
-      refreshCategoryOptions();
-      await renderList();
-      return;
-    }
-
-    // 2) Si no hay resultados, y no hemos cargado todo, hacemos fallback a "últimas 200" y filtrado local por texto
-    if(!__loadedAll){
-      const latest = await fetchLatestInspections(200);
-      const records = [];
-      for(const raw of latest){
-        const rec = normalizeImportedRecord((raw && raw.data && typeof raw.data==='object') ? raw.data : raw);
-        if(rec){
-          rec.id = String(raw.id || rec.id);
-          records.push(rec);
-        }
-      }
-      __dbCache = ensureDbShape(records).items;
-      __cacheLoaded = true;
-      __page = 1;
-      refreshCategoryOptions();
-      await renderList(); // applyFilters ya usa histSearch
-      // si aún así no aparece, sugerimos cargar todo
-      const filtered = applyFilters(getCache());
-      if(!filtered.length){
-        if(confirm('No se encontró nada por código exacto ni en las últimas 200. ¿Quieres CARGAR TODAS para buscar por texto en todo el histórico?')){
-          await loadAllFromCloud();
-        }
-      }
-      return;
-    }
-
-    // 3) Ya estaba cargado todo y no apareció: render normal (applyFilters mostrará vacío)
-    await renderList();
-  }catch(e){
-    console.error(e);
-    alert('No se pudo buscar.\n' + (e && (e.message||e.toString()) ? (e.message||e.toString()) : ''));
-  }
-}
-
-
-async function clearDB(){
-  if(!confirm('¿Vaciar por completo la base de datos en la nube (Firestore)?')) return;
-  try{
-    await deleteAllInspections();
-    __page = 1;
-    await refreshCache();
-    refreshCategoryOptions();
-    await renderList();
-  }catch(e){
-    console.error(e);
-    alert('No se pudo vaciar la base de datos.');
-  }
-}
+async function refreshCache(){ await loadDB(); }
 
 function parseDateSafe(v){
   if(!v) return null;
@@ -832,22 +617,6 @@ function formatDateDDMMYYYY_HHMM(input){
   return `${dd}/${mm}/${yyyy} ${hh}:${mi}`;
 }
 
-function resetToFirstPageAndRender(){
-  __page = 1;
-  // renderList ya usa cache; si quieres reflejar cambios remotos, recarga:
-  renderList();
-}
-
-function clearAdvancedFilters(){
-  document.getElementById('advCategory').value = '';
-  document.getElementById('advForm').value = '';
-  document.getElementById('advFrom').value = '';
-  document.getElementById('advTo').value = '';
-  document.getElementById('histSearch').value = '';
-  __page = 1;
-  renderList();
-}
-
 function refreshCategoryOptions(){
   const sel = document.getElementById('advCategory');
   if(!sel) return;
@@ -866,12 +635,12 @@ function refreshCategoryOptions(){
 }
 
 function applyFilters(db){
-  const q = normalizeLower(document.getElementById('histSearch').value);
-  const cat = normalizeStr(document.getElementById('advCategory').value);
-  const formLike = normalizeLower(document.getElementById('advForm').value);
+  const q = normalizeLower((document.getElementById('histSearch')||{}).value);
+  const cat = normalizeStr((document.getElementById('advCategory')||{}).value);
+  const formLike = normalizeLower((document.getElementById('advForm')||{}).value);
 
-  const fromVal = document.getElementById('advFrom').value;
-  const toVal = document.getElementById('advTo').value;
+  const fromVal = (document.getElementById('advFrom')||{}).value;
+  const toVal = (document.getElementById('advTo')||{}).value;
 
   const from = parseDateSafe(fromVal ? fromVal : null);
   const to = parseDateSafe(toVal ? toVal : null);
@@ -884,9 +653,8 @@ function applyFilters(db){
 
     if(q){
       try{
-        // Incluye fingerprint (TAG/código) y raw
         if(!JSON.stringify(e).toLowerCase().includes(q)) return false;
-      }catch(err){}
+      }catch(_){}
     }
 
     if(cat && normalizeStr(e.category) !== cat) return false;
@@ -908,11 +676,15 @@ function applyFilters(db){
   });
 }
 
+function setPage(p){
+  __page = Number(p) || 1;
+  renderList();
+}
+
 async function renderList(){
   const wrap = document.getElementById('histList');
   if(!wrap) return;
 
-  // Si aún no cargó cache, cárgala (Firestore)
   if(!__cacheLoaded){
     wrap.innerHTML = '';
     const div = document.createElement('div');
@@ -923,7 +695,6 @@ async function renderList(){
     try{
       await refreshCache();
     }catch(e){
-      console.error(e);
       wrap.innerHTML = '';
       const err = document.createElement('div');
       err.className = 'histEmpty';
@@ -933,25 +704,21 @@ async function renderList(){
     }
   }
 
-  const db = getCache();
   refreshCategoryOptions();
 
+  const db = getCache();
   const filtered = applyFilters(db);
 
   wrap.innerHTML = '';
   if(filtered.length === 0){
     const div = document.createElement('div');
     div.className = 'histEmpty';
-    div.textContent = db.length === 0
-      ? 'No hay inspecciones guardadas todavía.'
-      : 'No hay inspecciones que coincidan con los filtros.';
+    div.textContent = db.length === 0 ? 'No hay inspecciones guardadas todavía.' : 'No hay inspecciones que coincidan con los filtros.';
     wrap.appendChild(div);
     return;
   }
 
-  const itemsSorted = filtered
-    .slice()
-    .sort((a,b)=> String(b.lastEditedISO||'').localeCompare(String(a.lastEditedISO||'')));
+  const itemsSorted = filtered.slice().sort((a,b)=> String(b.lastEditedISO||'').localeCompare(String(a.lastEditedISO||'')));
 
   const total = itemsSorted.length;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -961,6 +728,9 @@ async function renderList(){
   const start = (__page - 1) * PAGE_SIZE;
   const end = Math.min(start + PAGE_SIZE, total);
   const pageItems = itemsSorted.slice(start, end);
+
+  const tableWrap = document.createElement('div');
+  tableWrap.className = 'tableWrap';
 
   const table = document.createElement('table');
   table.className = 'histTable';
@@ -977,19 +747,27 @@ async function renderList(){
   `;
 
   const tbody = table.querySelector('tbody');
-
-  pageItems.forEach(e=>{
+  for(const e of pageItems){
     const tr = document.createElement('tr');
+    const safeId = String(e.id || '');
     tr.innerHTML = `
       <td>${formatDateDDMMYYYY_HHMM(e.lastEditedISO)}</td>
-      <td>${e.category || '—'}</td>
-      <td>${e.form || '—'}</td>
-      <td><button type="button" class="primary" onclick="exportRecordPDF('${e.id}')">Exportar</button></td>
+      <td>${(e.category || '—')}</td>
+      <td>${(e.form || '—')}</td>
+      <td><button type="button" class="primary" data-export-id="${safeId}">Exportar</button></td>
     `;
     tbody.appendChild(tr);
-  });
+  }
 
-  wrap.appendChild(table);
+  tableWrap.appendChild(table);
+  wrap.appendChild(tableWrap);
+
+  tableWrap.addEventListener('click', (ev)=>{
+    const btn = ev.target && ev.target.closest ? ev.target.closest('button[data-export-id]') : null;
+    if(!btn) return;
+    const id = btn.getAttribute('data-export-id') || '';
+    if(id) exportRecordPDF(id);
+  }, { passive:true });
 
   const pager = document.createElement('div');
   pager.className = 'pager';
@@ -999,107 +777,147 @@ async function renderList(){
       · Página <span class="pill">${__page}</span> / <span class="pill">${totalPages}</span>
     </div>
     <div class="controls">
-      <button type="button" onclick="setPage(1)" ${__page===1?'disabled':''}>⏮ Primera</button>
-      <button type="button" onclick="setPage(${__page-1})" ${__page===1?'disabled':''}>◀ Anterior</button>
-      <button type="button" onclick="setPage(${__page+1})" ${__page===totalPages?'disabled':''}>Siguiente ▶</button>
-      <button type="button" onclick="setPage(${totalPages})" ${__page===totalPages?'disabled':''}>Última ⏭</button>
+      <button type="button" data-page="1" ${__page===1?'disabled':''}>⏮ Primera</button>
+      <button type="button" data-page="${__page-1}" ${__page===1?'disabled':''}>◀ Anterior</button>
+      <button type="button" data-page="${__page+1}" ${__page===totalPages?'disabled':''}>Siguiente ▶</button>
+      <button type="button" data-page="${totalPages}" ${__page===totalPages?'disabled':''}>Última ⏭</button>
     </div>
   `;
   wrap.appendChild(pager);
+
+  pager.addEventListener('click', (ev)=>{
+    const b = ev.target && ev.target.closest ? ev.target.closest('button[data-page]') : null;
+    if(!b || b.disabled) return;
+    const p = Number(b.getAttribute('data-page') || '1') || 1;
+    setPage(p);
+  }, { passive:true });
 }
 
-function setPage(p){
-  __page = Number(p) || 1;
-  renderList();
-}
-
-/**
- * Importar JSON:
- * - Normaliza registros como antes
- * - Guarda cada registro como template en Firestore (upsert)
- * - (Opcional) evita duplicados por TAG/código (code = fingerprint) consultando cache
- */
-function importJsonFiles(){
-  const inp = document.createElement('input');
-  inp.type = 'file';
-  inp.accept = 'application/json,.json';
-  inp.multiple = true;
-
-  inp.onchange = async ()=>{
-    const files = [...(inp.files || [])];
-
-    // Asegura cache para dedupe por fingerprint (code)
-    try{
-      if(!__cacheLoaded) await refreshCache();
-    }catch(e){}
-
-    const db = getCache();
-    const seen = new Set(db.map(x=>String(x?.fingerprint||'')).filter(Boolean));
-
-    let importedCount = 0;
-
-    for(const f of files){
-      try{
-        const txt = await f.text();
-        const obj = JSON.parse(txt);
-
-        // Soporta export del Inspector con múltiples inspecciones en un solo archivo
-        if(obj && typeof obj === 'object' && obj.format === 'inspector_inspections_v1' && Array.isArray(obj.inspections)){
-          for(const one of obj.inspections){
-            const rec = normalizeImportedRecord(one);
-            if(rec && rec.fingerprint && !seen.has(String(rec.fingerprint))){
-              // upsert a Firestore
-              rec.id = rec.id || makeId();
-              const tpl = recordToTemplate(rec, null);
-
-              // Si ya existe por code, reutiliza su docId para merge
-              const existing = await findByCode(tpl.code);
-              if(existing && existing.id){
-                tpl.id = existing.id;
-                tpl.createdAt = existing.createdAt || tpl.createdAt;
-              }
-
-              await upsertInspectionRaw(tpl);
-              seen.add(String(rec.fingerprint));
-              importedCount++;
-            }
-          }
-          continue;
-        }
-
-        // Caso normal: un JSON = un registro
-        const rec = normalizeImportedRecord(obj);
-        if(rec && rec.fingerprint && !seen.has(String(rec.fingerprint))){
-          rec.id = rec.id || makeId();
-          const tpl = recordToTemplate(rec, null);
-
-          const existing = await findByCode(tpl.code);
-          if(existing && existing.id){
-            tpl.id = existing.id;
-            tpl.createdAt = existing.createdAt || tpl.createdAt;
-          }
-
-          await upsertInspectionRaw(tpl);
-          seen.add(String(rec.fingerprint));
-          importedCount++;
-        }
-      }catch(e){}
+async function loadAllFromCloud(){
+  if(!confirm('Esto cargará TODAS las inspecciones desde Firestore (puede tardar). ¿Continuar?')) return;
+  const wrap = document.getElementById('histList');
+  try{
+    if(wrap) wrap.innerHTML = '<div class="histEmpty">Cargando todas desde Firestore…</div>';
+    const rows = await fetchAllInspections();
+    const records = [];
+    for(const raw of rows){
+      const base = (raw && raw.data && typeof raw.data==='object') ? raw.data : raw;
+      const rec = normalizeImportedRecord(base);
+      if(rec){
+        rec.id = String(raw.id || rec.id);
+        rec.fingerprint = normalizeStr(raw.code || rec.fingerprint);
+        rec.lastEditedISO = normalizeStr(rec.lastEditedISO || toISOFromAny(raw.updatedAtTs) || raw.updatedAt || raw.createdAt || nowISO());
+        records.push(rec);
+      }
     }
-
-    await refreshCache();
+    __dbCache = ensureDbShape(records).items;
+    __cacheLoaded = true;
+    __loadedAll = true;
     __page = 1;
     refreshCategoryOptions();
     await renderList();
-
-    if(importedCount === 0){
-      alert('No se importaron nuevos registros (puede que ya existan por TAG/código).');
-    }
-  };
-
-  inp.click();
+  }catch(e){
+    alert('No se pudo cargar todo.\n' + (e && (e.message||e.toString()) ? (e.message||e.toString()) : ''));
+  }
 }
 
-let __exportFrame = null;
+async function runSearch(){
+  const q = normalizeStr((document.getElementById('histSearch')||{}).value);
+  if(!q){
+    __cacheLoaded = false;
+    __loadedAll = false;
+    __page = 1;
+    await renderList();
+    return;
+  }
+
+  const wrap = document.getElementById('histList');
+  try{
+    if(wrap) wrap.innerHTML = '<div class="histEmpty">Buscando en Firestore…</div>';
+
+    const rows = await fetchInspectionsByCode(q);
+
+    if(rows && rows.length){
+      const records = [];
+      for(const raw of rows){
+        const base = (raw && raw.data && typeof raw.data==='object') ? raw.data : raw;
+        const rec = normalizeImportedRecord(base);
+        if(rec){
+          rec.id = String(raw.id || rec.id);
+          rec.fingerprint = normalizeStr(raw.code || rec.fingerprint || q);
+          rec.lastEditedISO = normalizeStr(rec.lastEditedISO || toISOFromAny(raw.updatedAtTs) || raw.updatedAt || raw.createdAt || nowISO());
+          records.push(rec);
+        }
+      }
+      __dbCache = ensureDbShape(records).items;
+      __cacheLoaded = true;
+      __page = 1;
+      refreshCategoryOptions();
+      await renderList();
+      return;
+    }
+
+    if(!__loadedAll){
+      const latest = await fetchLatestInspections(200);
+      const records = [];
+      for(const raw of latest){
+        const base = (raw && raw.data && typeof raw.data==='object') ? raw.data : raw;
+        const rec = normalizeImportedRecord(base);
+        if(rec){
+          rec.id = String(raw.id || rec.id);
+          rec.fingerprint = normalizeStr(raw.code || rec.fingerprint);
+          rec.lastEditedISO = normalizeStr(rec.lastEditedISO || toISOFromAny(raw.updatedAtTs) || raw.updatedAt || raw.createdAt || nowISO());
+          records.push(rec);
+        }
+      }
+      __dbCache = ensureDbShape(records).items;
+      __cacheLoaded = true;
+      __page = 1;
+      refreshCategoryOptions();
+      await renderList();
+      const filtered = applyFilters(getCache());
+      if(!filtered.length){
+        if(confirm('No se encontró nada por código exacto ni en las últimas 200. ¿Quieres CARGAR TODAS para buscar por texto en todo el histórico?')){
+          await loadAllFromCloud();
+        }
+      }
+      return;
+    }
+
+    await renderList();
+  }catch(e){
+    alert('No se pudo buscar.\n' + (e && (e.message||e.toString()) ? (e.message||e.toString()) : ''));
+  }
+}
+
+async function clearDB(){
+  if(!confirm('¿Vaciar por completo la base de datos en la nube (Firestore)?')) return;
+  try{
+    await deleteAllInspections();
+    __page = 1;
+    __loadedAll = false;
+    await refreshCache();
+    refreshCategoryOptions();
+    await renderList();
+  }catch(e){
+    alert('No se pudo vaciar la base de datos.');
+  }
+}
+
+function resetToFirstPageAndRender(){
+  __page = 1;
+  renderList();
+}
+
+function clearAdvancedFilters(){
+  const a = document.getElementById('advCategory'); if(a) a.value = '';
+  const b = document.getElementById('advForm'); if(b) b.value = '';
+  const c = document.getElementById('advFrom'); if(c) c.value = '';
+  const d = document.getElementById('advTo'); if(d) d.value = '';
+  const e = document.getElementById('histSearch'); if(e) e.value = '';
+  __page = 1;
+  renderList();
+}
 
 function exportStamp(date){
   const d = date instanceof Date ? date : new Date();
@@ -1123,6 +941,8 @@ function makeSafeName(name, fallback){
   return out || fallback || 'Archivo';
 }
 
+let __exportFrame = null;
+
 async function getExportFrame(){
   if(__exportFrame && __exportFrame.contentWindow && __exportFrame.contentDocument) return __exportFrame;
 
@@ -1143,30 +963,20 @@ async function getExportFrame(){
 <html lang="es">
 <head>
 <meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>Export PDF</title>
 <style>
   :root{
     --page-bg:#ffffff;
     --border:#000000;
     --shadow: rgba(0,0,0,.12);
-
     --header-bg:#ffffff;
     --header-text:#000000;
-
     --section-bg:#e6e6e6;
     --section-text:#000000;
-
     --body-bg:#ffffff;
     --body-text:#000000;
-
-    --w95-bg:#c0c0c0;
-    --w95-light:#ffffff;
-    --w95-shadow:#404040;
-    --w95-blue:#000080;
-    --w95-hilite:#dfdfdf;
   }
-
   *{ box-sizing:border-box; }
   body{
     margin:0;
@@ -1174,7 +984,6 @@ async function getExportFrame(){
     background:#f5f5f5;
     color:var(--body-text);
   }
-
   .page{
     width: 900px;
     max-width: 100%;
@@ -1184,7 +993,6 @@ async function getExportFrame(){
     box-shadow: 0 10px 30px var(--shadow);
     padding: 18px 18px 22px;
   }
-
   .doc-header{
     display:grid;
     grid-template-columns: 120px 1fr 190px;
@@ -1219,9 +1027,7 @@ async function getExportFrame(){
     line-height: 1.35;
   }
   .muted{ opacity:.75; }
-
   #fieldsMount{ margin-top: 10px; }
-
   .field{
     border: 1px solid var(--border);
     margin-top: 10px;
@@ -1245,14 +1051,11 @@ async function getExportFrame(){
     padding: 10px;
     font-size: 13px;
   }
-
   input[type="text"], input[type="number"], input[type="date"], textarea, select{
     width:100%;
     border: 1px solid var(--border);
     font: inherit;
     background:#fff;
-
-    /* ✅ FIX: evita que html2canvas recorte el texto por abajo (descenders) */
     line-height: 1.35;
     padding: 9px 10px 11px;
   }
@@ -1264,13 +1067,11 @@ async function getExportFrame(){
     resize: vertical;
     padding-bottom: 14px;
   }
-
   .checkline{
     display:flex;
     align-items:center;
     gap:10px;
   }
-
   .photoGrid{
     display:grid;
     grid-template-columns: repeat(3, 1fr);
@@ -1288,8 +1089,11 @@ async function getExportFrame(){
     display:block;
     border: 1px solid #ddd;
   }
-
   body.exporting .uiOnly{ display:none !important; }
+  @media (max-width: 560px){
+    .doc-header{ grid-template-columns: 1fr; text-align:left; }
+    .header-meta{ text-align:left; }
+  }
 </style>
 </head>
 <body>
@@ -1319,7 +1123,6 @@ async function getExportFrame(){
       .replaceAll('"','&quot;')
       .replaceAll("'","&#039;");
   }
-
   function normalize(s){ return String(s ?? '').trim().toLowerCase(); }
 
   function fieldHTML(d, idx){
@@ -1331,12 +1134,8 @@ async function getExportFrame(){
       const v = (d.value ?? '').toString();
       return \`
         <div class="field" data-type="text" data-idx="\${idx}">
-          <div class="field-head">
-            <div class="title">\${escapeHTML(title)}</div>
-          </div>
-          <div class="field-body textline">
-            <input type="text" value="\${escapeHTML(v)}" />
-          </div>
+          <div class="field-head"><div class="title">\${escapeHTML(title)}</div></div>
+          <div class="field-body textline"><input type="text" value="\${escapeHTML(v)}" /></div>
         </div>
       \`;
     }
@@ -1345,12 +1144,8 @@ async function getExportFrame(){
       const v = (d.value ?? '').toString();
       return \`
         <div class="field" data-type="textarea" data-idx="\${idx}">
-          <div class="field-head">
-            <div class="title">\${escapeHTML(title)}</div>
-          </div>
-          <div class="field-body">
-            <textarea>\${escapeHTML(v)}</textarea>
-          </div>
+          <div class="field-head"><div class="title">\${escapeHTML(title)}</div></div>
+          <div class="field-body"><textarea>\${escapeHTML(v)}</textarea></div>
         </div>
       \`;
     }
@@ -1359,12 +1154,8 @@ async function getExportFrame(){
       const v = (d.value ?? '').toString();
       return \`
         <div class="field" data-type="number" data-idx="\${idx}">
-          <div class="field-head">
-            <div class="title">\${escapeHTML(title)}</div>
-          </div>
-          <div class="field-body">
-            <input type="number" value="\${escapeHTML(v)}" />
-          </div>
+          <div class="field-head"><div class="title">\${escapeHTML(title)}</div></div>
+          <div class="field-body"><input type="number" value="\${escapeHTML(v)}" /></div>
         </div>
       \`;
     }
@@ -1373,12 +1164,8 @@ async function getExportFrame(){
       const v = (d.value ?? '').toString();
       return \`
         <div class="field" data-type="date" data-idx="\${idx}">
-          <div class="field-head">
-            <div class="title">\${escapeHTML(title)}</div>
-          </div>
-          <div class="field-body">
-            <input type="date" value="\${escapeHTML(v)}" />
-          </div>
+          <div class="field-head"><div class="title">\${escapeHTML(title)}</div></div>
+          <div class="field-body"><input type="date" value="\${escapeHTML(v)}" /></div>
         </div>
       \`;
     }
@@ -1393,12 +1180,8 @@ async function getExportFrame(){
       }).join('');
       return \`
         <div class="field" data-type="select" data-idx="\${idx}">
-          <div class="field-head">
-            <div class="title">\${escapeHTML(title)}</div>
-          </div>
-          <div class="field-body">
-            <select>\${optsHTML}</select>
-          </div>
+          <div class="field-head"><div class="title">\${escapeHTML(title)}</div></div>
+          <div class="field-body"><select>\${optsHTML}</select></div>
         </div>
       \`;
     }
@@ -1409,14 +1192,9 @@ async function getExportFrame(){
       const checked = v ? 'checked' : '';
       return \`
         <div class="field" data-type="check" data-idx="\${idx}">
-          <div class="field-head">
-            <div class="title">\${escapeHTML(title)}</div>
-          </div>
+          <div class="field-head"><div class="title">\${escapeHTML(title)}</div></div>
           <div class="field-body">
-            <label class="checkline">
-              <input type="checkbox" \${checked} />
-              <span>\${escapeHTML(label)}</span>
-            </label>
+            <label class="checkline"><input type="checkbox" \${checked} /><span>\${escapeHTML(label)}</span></label>
           </div>
         </div>
       \`;
@@ -1426,20 +1204,12 @@ async function getExportFrame(){
       const images = Array.isArray(d.images) ? d.images : [];
       const grid = images.map((src, i)=>{
         const safe = (src ?? '').toString();
-        return \`
-          <div class="photoItem">
-            <img src="\${escapeHTML(safe)}" alt="Foto \${i+1}" />
-          </div>
-        \`;
+        return \`<div class="photoItem"><img src="\${escapeHTML(safe)}" alt="Foto \${i+1}" /></div>\`;
       }).join('');
       return \`
         <div class="field" data-type="photos" data-idx="\${idx}">
-          <div class="field-head">
-            <div class="title">\${escapeHTML(title)}</div>
-          </div>
-          <div class="field-body">
-            <div class="photoGrid">\${grid || '<div class="muted">—</div>'}</div>
-          </div>
+          <div class="field-head"><div class="title">\${escapeHTML(title)}</div></div>
+          <div class="field-body"><div class="photoGrid">\${grid || '<div class="muted">—</div>'}</div></div>
         </div>
       \`;
     }
@@ -1447,9 +1217,7 @@ async function getExportFrame(){
     const v = (d.value ?? '').toString();
     return \`
       <div class="field" data-type="unknown" data-idx="\${idx}">
-        <div class="field-head">
-          <div class="title">\${escapeHTML(title || type)}</div>
-        </div>
+        <div class="field-head"><div class="title">\${escapeHTML(title || type)}</div></div>
         <div class="field-body">\${escapeHTML(v)}</div>
       </div>
     \`;
@@ -1490,11 +1258,7 @@ async function getExportFrame(){
     document.getElementById('lastEdited').textContent = lastEdited;
 
     const logoBox = document.getElementById('logoBox');
-    if(logo){
-      logoBox.style.backgroundImage = \`url("\${logo}")\`;
-    }else{
-      logoBox.style.backgroundImage = 'none';
-    }
+    logoBox.style.backgroundImage = logo ? \`url("\${logo}")\` : 'none';
 
     const mount = document.getElementById('fieldsMount');
     const fields = Array.isArray(layout.fields) ? layout.fields : [];
@@ -1508,10 +1272,7 @@ async function getExportFrame(){
     a.download = filename || 'informe.pdf';
     document.body.appendChild(a);
     a.click();
-    setTimeout(()=>{
-      URL.revokeObjectURL(url);
-      a.remove();
-    }, 2500);
+    setTimeout(()=>{ URL.revokeObjectURL(url); a.remove(); }, 2500);
   }
 
   async function exportPDFLikeInspector(filename){
@@ -1536,14 +1297,15 @@ async function getExportFrame(){
         onclone: (doc)=>{
           const cap = doc.getElementById('capture');
           if(cap){ cap.style.boxShadow = 'none'; cap.style.margin = '0'; }
-          doc.querySelectorAll('.uiOnly').forEach(a => a.style.display = 'none');
+          const ui = doc.querySelectorAll('.uiOnly');
+          for(const el of ui) el.style.display = 'none';
         }
       });
     }
 
     try{
       const header = document.getElementById('docHeader');
-      const fields = [...document.querySelectorAll('#capture .field')];
+      const fields = Array.from(document.querySelectorAll('#capture .field'));
       const blocks = [header, ...fields];
 
       let cursorY = margin;
@@ -1594,7 +1356,7 @@ async function getExportFrame(){
       try{
         const w = frame.contentWindow;
         if(w && w.jspdf && w.html2canvas && typeof w.renderAndExport === 'function') return resolve();
-      }catch(e){}
+      }catch(_){}
       if(Date.now() - start > 10000) return reject(new Error('No se pudieron cargar librerías de exportación.'));
       setTimeout(tick, 50);
     })();
@@ -1605,17 +1367,14 @@ async function getExportFrame(){
 }
 
 async function exportRecordPDF(id){
-  // Usa cache; si no existe, intenta buscar en Firestore directo
   let rec = getCache().find(x => x && x.id === id);
 
   if(!rec){
     try{
       assertFirestoreReady();
       const doc = await __fire.col.doc(String(id)).get();
-      if(doc.exists){
-        rec = templateToRecord({ id: doc.id, ...(doc.data() || {}) });
-      }
-    }catch(e){}
+      if(doc.exists) rec = templateToRecord({ id: doc.id, ...(doc.data() || {}) });
+    }catch(_){}
   }
 
   if(!rec){
@@ -1645,21 +1404,46 @@ async function exportRecordPDF(id){
     const frame = await getExportFrame();
     await frame.contentWindow.renderAndExport(layout, filename);
   }catch(e){
-    console.error(e);
     alert('No se pudo exportar el PDF.');
   }
 }
 
-function goHome(){
-  window.location.href = "index.html";
+async function initFirestore(){
+  if(!firebase.apps || !firebase.apps.length) __fire.app = firebase.initializeApp(firebaseConfig);
+  else __fire.app = firebase.app();
+  __fire.db = firebase.firestore();
+  __fire.col = __fire.db.collection(COLLECTION_NAME);
 }
 
-/* =========================
-   5) Buscar por TAG/código (Firestore)
-   =========================
-   Este helper NO cambia la UI existente; si quieres usarlo desde consola:
-   await window.findAndFocusByCode('abcd1234');
-*/
+async function initApp(){
+  await initFirestore();
+  await renderList();
+
+  const hs = document.getElementById('histSearch');
+  const advCategory = document.getElementById('advCategory');
+  const advForm = document.getElementById('advForm');
+  const advFrom = document.getElementById('advFrom');
+  const advTo = document.getElementById('advTo');
+
+  const btnBuscar = document.getElementById('btnBuscar');
+  const btnCargarTodas = document.getElementById('btnCargarTodas');
+  const btnLimpiar = document.getElementById('btnLimpiar');
+
+  if(btnBuscar) btnBuscar.addEventListener('click', ()=>{ runSearch(); }, { passive:true });
+  if(btnCargarTodas) btnCargarTodas.addEventListener('click', ()=>{ loadAllFromCloud(); }, { passive:true });
+  if(btnLimpiar) btnLimpiar.addEventListener('click', ()=>{ clearAdvancedFilters(); }, { passive:true });
+
+  const reRender = ()=> resetToFirstPageAndRender();
+  if(hs){
+    hs.addEventListener('input', reRender, { passive:true });
+    hs.addEventListener('keydown', (ev)=>{ if(ev.key==='Enter'){ ev.preventDefault(); runSearch(); } });
+  }
+  if(advCategory) advCategory.addEventListener('change', reRender, { passive:true });
+  if(advForm) advForm.addEventListener('input', reRender, { passive:true });
+  if(advFrom) advFrom.addEventListener('change', reRender, { passive:true });
+  if(advTo) advTo.addEventListener('change', reRender, { passive:true });
+}
+
 window.findAndFocusByCode = async function(code){
   try{
     const tpl = await findByCode(code);
@@ -1668,68 +1452,90 @@ window.findAndFocusByCode = async function(code){
       return null;
     }
     const rec = templateToRecord(tpl);
-
-    // Carga/actualiza cache y centra el filtro rápido en el código
     await refreshCache();
-    document.getElementById('histSearch').value = String(code);
+    const hs = document.getElementById('histSearch');
+    if(hs) hs.value = String(code);
     __page = 1;
     await renderList();
     return rec;
   }catch(e){
-    console.error(e);
     alert('No se pudo buscar por TAG/código.');
     return null;
   }
 };
 
-/* =========================
-   Firebase init + arranque
-   ========================= */
-async function initFirestore(){
-  try{
-    if(!firebase.apps || !firebase.apps.length){
-      __fire.app = firebase.initializeApp(firebaseConfig);
-    }else{
-      __fire.app = firebase.app();
-    }
-    __fire.db = firebase.firestore();
-    __fire.col = __fire.db.collection(COLLECTION_NAME);
-  }catch(e){
-    console.error(e);
-    throw e;
-  }
-}
-
-async function initApp(){
-  await initFirestore();
-  await renderList();
-
-  // Enter en búsqueda rápida => buscar
-  const hs = document.getElementById('histSearch');
-  if(hs){
-    hs.addEventListener('keydown', (ev)=>{
-      if(ev.key==='Enter'){ ev.preventDefault(); runSearch(); }
-    });
-  }
-}
-
-// Init
-initApp();
-
-
 function exportJSON(){
   alert('Modo nube: la base de datos lee directamente desde Firestore.\n\nSi necesitas una copia, usa la exportación PDF o añade una función de backup server-side.');
 }
-function importJsonFiles(){
-  alert('Modo nube: no se importan JSON locales.\n\nLa fuente de verdad es Firestore.');
+
+async function importJsonFiles(){
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = 'application/json,.json';
+  inp.multiple = true;
+
+  inp.onchange = async ()=>{
+    const files = Array.from(inp.files || []);
+
+    try{ if(!__cacheLoaded) await refreshCache(); }catch(_){}
+    const db = getCache();
+    const seen = new Set(db.map(x=>String(x?.fingerprint||'')).filter(Boolean));
+
+    let importedCount = 0;
+
+    for(const f of files){
+      try{
+        const txt = await f.text();
+        const obj = JSON.parse(txt);
+
+        if(obj && typeof obj === 'object' && obj.format === 'inspector_inspections_v1' && Array.isArray(obj.inspections)){
+          for(const one of obj.inspections){
+            const rec = normalizeImportedRecord(one);
+            if(rec && rec.fingerprint && !seen.has(String(rec.fingerprint))){
+              rec.id = rec.id || makeId();
+              const tpl = recordToTemplate(rec, null);
+              const existing = await findByCode(tpl.code);
+              if(existing && existing.id){
+                tpl.id = existing.id;
+                tpl.createdAt = normalizeStr(existing.createdAt) || tpl.createdAt;
+              }
+              await upsertInspectionRaw(tpl);
+              seen.add(String(rec.fingerprint));
+              importedCount++;
+            }
+          }
+          continue;
+        }
+
+        const rec = normalizeImportedRecord(obj);
+        if(rec && rec.fingerprint && !seen.has(String(rec.fingerprint))){
+          rec.id = rec.id || makeId();
+          const tpl = recordToTemplate(rec, null);
+          const existing = await findByCode(tpl.code);
+          if(existing && existing.id){
+            tpl.id = existing.id;
+            tpl.createdAt = normalizeStr(existing.createdAt) || tpl.createdAt;
+          }
+          await upsertInspectionRaw(tpl);
+          seen.add(String(rec.fingerprint));
+          importedCount++;
+        }
+      }catch(_){}
+    }
+
+    await refreshCache();
+    __page = 1;
+    refreshCategoryOptions();
+    await renderList();
+
+    if(importedCount === 0) alert('No se importaron nuevos registros (puede que ya existan por TAG/código).');
+  };
+
+  inp.click();
 }
 
-function clearAll(){
-  // compat: algunos botones/atajos llaman clearAll
-  return clearDB();
-}
+function clearAll(){ return clearDB(); }
 
-// --- Bindings explícitos para botones inline (robustez) ---
 try{
   window.refreshCache = refreshCache;
   window.runSearch = runSearch;
@@ -1738,8 +1544,9 @@ try{
   window.clearAll = clearAll;
   window.exportJSON = exportJSON;
   window.importJsonFiles = importJsonFiles;
-}catch(e){ console.error(e); }
+}catch(_){}
 
+initApp();
 </script>
 </body>
 </html>

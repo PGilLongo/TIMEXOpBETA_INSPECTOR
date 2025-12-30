@@ -2,10 +2,9 @@
 <html lang="es">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
   <title>MENU PRINCIPAL</title>
 
-  <!-- PWA -->
   <meta name="theme-color" content="#c0c0c0" />
   <meta name="description" content="Plataforma de inspecciones de bomberos Puy Du Fou España" />
   <link rel="manifest" href="./manifest.webmanifest" />
@@ -18,26 +17,47 @@
     :root{
       --w95-bg:#c0c0c0;
       --w95-light:#ffffff;
-      --w95-dark:#808080;
       --w95-shadow:#404040;
       --w95-blue:#000080;
       --w95-hilite:#dfdfdf;
       --text:#000;
       --card:#ffffff;
+
+      --a-green:#0f7b00;
+      --a-yellow:#9a7b00;
+      --a-orange:#b24a00;
+      --a-red:#a20000;
+
+      --space-1:6px;
+      --space-2:10px;
+      --space-3:12px;
+      --space-4:14px;
+      --radius:0px;
+      --max:980px;
     }
 
-    html,body{height:100%}
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
     body{
       margin:0;
       font-family:"MS Sans Serif", Tahoma, Arial, Helvetica, sans-serif;
       background: var(--w95-bg);
       color: var(--text);
+      -webkit-text-size-adjust:100%;
+      text-rendering:optimizeLegibility;
+    }
+
+    :focus-visible{
+      outline:2px solid #000;
+      outline-offset:2px;
     }
 
     .topbar{
-      position:sticky; top:0; z-index:50;
+      position:sticky;
+      top:0;
+      z-index:50;
       background: var(--w95-bg);
-      padding:6px 8px 10px;
+      padding: var(--space-1) var(--space-2) var(--space-2);
       border-top:2px solid var(--w95-light);
       border-left:2px solid var(--w95-light);
       border-right:2px solid var(--w95-shadow);
@@ -51,14 +71,17 @@
       font-weight:900;
       font-size:12px;
       padding:4px 6px;
-      margin:-6px -8px 10px -8px;
+      margin: calc(var(--space-1) * -1) calc(var(--space-2) * -1) var(--space-2) calc(var(--space-2) * -1);
       border-bottom:1px solid #000;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
     }
 
     .shell{
-      max-width:980px;
-      margin:14px auto;
-      padding:0 10px 24px;
+      max-width: var(--max);
+      margin: var(--space-4) auto;
+      padding: 0 var(--space-2) 24px;
     }
 
     .window{
@@ -67,11 +90,11 @@
       border-left:2px solid var(--w95-light);
       border-right:2px solid var(--w95-shadow);
       border-bottom:2px solid var(--w95-shadow);
-      padding:12px;
+      padding: var(--space-3);
     }
 
     .windowTitle{
-      margin:0 0 10px 0;
+      margin:0 0 var(--space-2) 0;
       font-size:12px;
       font-weight:900;
       background: var(--w95-blue);
@@ -82,11 +105,14 @@
 
     .grid{
       display:grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap:12px;
+      gap: var(--space-3);
+      grid-template-columns: 1fr;
     }
-    @media (max-width: 900px){
-      .grid{ grid-template-columns: 1fr; }
+    @media (min-width: 620px){
+      .grid{ grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    }
+    @media (min-width: 980px){
+      .grid{ grid-template-columns: repeat(3, minmax(0, 1fr)); }
     }
 
     .card{
@@ -95,7 +121,8 @@
       border-left:2px solid var(--w95-light);
       border-right:2px solid var(--w95-shadow);
       border-bottom:2px solid var(--w95-shadow);
-      padding:14px;
+      padding: var(--space-4);
+      min-width:0;
     }
 
     .card h2{
@@ -124,6 +151,9 @@
       font-size:12px;
       font-family: inherit;
       text-align:left;
+      touch-action:manipulation;
+      user-select:none;
+      -webkit-tap-highlight-color:transparent;
     }
     .btn:active{
       border-top:2px solid var(--w95-shadow);
@@ -133,22 +163,154 @@
     }
     .btn.primary{ background: var(--w95-hilite); }
     .btn.danger{ background:#ffd6d6; }
+    .btn[disabled]{ cursor:not-allowed; opacity:.7; }
 
     .logo-area{
       margin-top:20px;
       display:flex;
       justify-content:center;
       align-items:center;
-      min-height:260px;
+      min-height: min(260px, 45vh);
       background: var(--w95-bg);
+      overflow:hidden;
     }
 
     .logo-area img{
       max-width:380px;
-      width:100%;
+      width:min(100%, 380px);
+      height:auto;
       opacity:0.35;
       filter: grayscale(100%);
       pointer-events:none;
+      display:block;
+    }
+
+    .alertsCard{ margin-bottom: var(--space-3); }
+    .alertsList{ font-size:12px; font-weight:700; }
+
+    .alerts-tools{
+      display:flex;
+      gap: var(--space-2);
+      flex-wrap:wrap;
+      align-items:flex-end;
+      margin:10px 0 8px;
+    }
+
+    .legend{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      font-size:12px;
+      font-weight:900;
+      margin:8px 0 10px;
+    }
+    .legend .item{
+      display:flex;
+      gap:6px;
+      align-items:center;
+      padding:4px 6px;
+      border:1px solid #000;
+      background: var(--w95-hilite);
+    }
+
+    .dot{
+      width:10px;
+      height:10px;
+      display:inline-block;
+      border:1px solid #000;
+      box-shadow: 1px 1px 0 #000;
+      flex:0 0 auto;
+    }
+    .dot.green{ background: #18b400; }
+    .dot.yellow{ background: #ffd200; }
+    .dot.orange{ background: #ff7a00; }
+    .dot.red{ background: #ff2a2a; }
+
+    .alertRow{
+      border-top:1px solid #000;
+      padding-top:10px;
+      margin-top:10px;
+    }
+    .alertHead{
+      display:flex;
+      gap:10px;
+      align-items:flex-start;
+      justify-content:space-between;
+      flex-wrap:wrap;
+    }
+    .alertTitle{
+      font-weight:900;
+      display:flex;
+      gap:8px;
+      align-items:center;
+      min-width:240px;
+      flex:1 1 240px;
+      min-width:0;
+    }
+    .alertTitle > span:last-child{
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+    }
+    .alertMeta{
+      font-weight:700;
+      font-size:12px;
+      opacity:.98;
+      display:flex;
+      gap:12px;
+      flex-wrap:wrap;
+      align-items:center;
+      justify-content:flex-end;
+    }
+    .pill{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:2px 6px;
+      border:1px solid #000;
+      background:#fff;
+      font-weight:900;
+      font-size:11px;
+      white-space:nowrap;
+    }
+    .pill.green{ color:var(--a-green); }
+    .pill.yellow{ color:var(--a-yellow); }
+    .pill.orange{ color:var(--a-orange); }
+    .pill.red{ color:var(--a-red); }
+
+    .miniBtn{
+      width:auto;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      padding:8px 10px;
+      text-align:center;
+    }
+
+    .counts{
+      font-size:12px;
+      font-weight:900;
+      margin:2px 0 0;
+      opacity:.95;
+    }
+
+    .muted{
+      opacity:.9;
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .markRow{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      margin-top:8px;
+      flex-wrap:wrap;
+      word-break:break-word;
+    }
+
+    @media (prefers-reduced-motion: reduce){
+      *{ scroll-behavior:auto !important; }
     }
   </style>
 </head>
@@ -160,26 +322,39 @@
     <div class="window">
       <div class="windowTitle">Accesos</div>
 
+      <div class="card alertsCard" id="alertsCard">
+        <h2>Alertas</h2>
+        <p>Lectura por urgencia (según la próxima fecha de realización).</p>
+
+        <div class="legend" aria-label="Leyenda de alertas">
+          <div class="item"><span class="dot green" aria-hidden="true"></span> Próxima a tener que realizarse</div>
+          <div class="item"><span class="dot yellow" aria-hidden="true"></span> Realizarse inminentemente</div>
+          <div class="item"><span class="dot orange" aria-hidden="true"></span> Realizarse hoy</div>
+          <div class="item"><span class="dot red" aria-hidden="true"></span> Pasadas (se quedarán en rojo hasta marcar)</div>
+        </div>
+
+        <div class="alerts-tools">
+          <button class="btn miniBtn" id="btnRefresh" type="button">Refrescar</button>
+        </div>
+
+        <div id="alertsCounts" class="counts"></div>
+        <div id="alertsList" class="alertsList"></div>
+      </div>
+
       <div class="grid">
         <div class="card">
           <p>Gestión / visor de registros, consultas y listados.</p>
-          <button class="btn primary" type="button" onclick="goTo('base_de_datos.html')">
-            Entrar a BASE DE DATOS
-          </button>
+          <button class="btn primary" id="btnDB" type="button">Entrar a BASE DE DATOS</button>
         </div>
 
         <div class="card">
           <p>Entrada y edición de inspecciones.</p>
-          <button class="btn primary" type="button" onclick="goTo('inspector.html')">
-            Entrar a INSPECTOR
-          </button>
+          <button class="btn primary" id="btnInspector" type="button">Entrar a INSPECTOR</button>
         </div>
 
         <div class="card">
           <p>Zona protegida. Requiere contraseña.</p>
-          <button class="btn danger" type="button" onclick="goAdmin()">
-            Entrar a ADMINISTRADOR
-          </button>
+          <button class="btn danger" id="btnAdmin" type="button">Entrar a ADMINISTRADOR</button>
         </div>
       </div>
 
@@ -187,43 +362,469 @@
         <img
           src="https://i.ibb.co/q3K7djsz/Escudo-bomberos-puy-du-fou-removebg-preview.png"
           alt="Escudo decorativo"
+          loading="lazy"
+          decoding="async"
+          referrerpolicy="no-referrer"
         />
       </div>
-
     </div>
   </div>
 
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+
   <script>
-    // Register Service Worker for PWA install/offline
-    (function(){
-      if("serviceWorker" in navigator){
+    (() => {
+      "use strict";
+
+      const ROUTES = {
+        db: "base_de_datos.html",
+        inspector: "inspector.html",
+        admin: "administrador.html"
+      };
+
+      const ADMIN_PASSWORD = "Pdft@2026";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyBLP0yGc_Yh0nKGNYbPcYabTg25LDw2wco",
+        authDomain: "inspector-b4f41.firebaseapp.com",
+        projectId: "inspector-b4f41",
+        storageBucket: "inspector-b4f41.firebasestorage.app",
+        messagingSenderId: "333394046622",
+        appId: "1:333394046622:web:caa18c6f1d341b0a97158f"
+      };
+
+      const TPL_COLLECTION = "templates_v1";
+      const CHECKS_COLLECTION = "alerts_checks_v1";
+      const IMMINENT_DAYS = 2;
+
+      let db = null;
+
+      const $ = (id) => document.getElementById(id);
+
+      const nowMs = () => Date.now();
+
+      const fsToDate = (value) => {
+        try{
+          if(!value) return null;
+          if(value instanceof Date && !isNaN(value.getTime())) return value;
+          if(typeof value === "string"){
+            const d = new Date(value);
+            return isNaN(d.getTime()) ? null : d;
+          }
+          if(typeof value === "number" && isFinite(value)){
+            const d = new Date(value);
+            return isNaN(d.getTime()) ? null : d;
+          }
+          if(typeof value === "object" && typeof value.toDate === "function"){
+            const d = value.toDate();
+            return (d instanceof Date && !isNaN(d.getTime())) ? d : null;
+          }
+          if(typeof value === "object" && typeof value.seconds === "number"){
+            const d = new Date(value.seconds * 1000);
+            return isNaN(d.getTime()) ? null : d;
+          }
+          return null;
+        }catch(_){
+          return null;
+        }
+      };
+
+      const fsToIso = (value) => {
+        const d = fsToDate(value);
+        return d ? d.toISOString() : "";
+      };
+
+      const toMs = (value) => {
+        const d = fsToDate(value);
+        return d ? d.getTime() : 0;
+      };
+
+      const addDaysMs = (ms, days) => ms + (days * 24 * 60 * 60 * 1000);
+
+      const fmtDate = (ms) => {
+        try{ return new Date(ms).toLocaleString("es-ES"); }catch(_){ return "—"; }
+      };
+
+      const esc = (s) => String(s || "").replace(/[&<>"']/g, (m) => ({
+        "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+      }[m]));
+
+      const sameLocalDay = (aMs, bMs) => {
+        try{
+          const a = new Date(aMs);
+          const b = new Date(bMs);
+          return a.getFullYear() === b.getFullYear() && a.getMonth() === b.getMonth() && a.getDate() === b.getDate();
+        }catch(_){
+          return false;
+        }
+      };
+
+      const daysUntil = (dueMs, now = nowMs()) => {
+        const diff = dueMs - now;
+        return Math.ceil(diff / (24 * 60 * 60 * 1000));
+      };
+
+      const getUpcomingDaysForTpl = (everyDays) => {
+        const n = Number(everyDays || 0);
+        if(!n || n <= 0) return 0;
+        return Math.max(1, Math.floor(n / 2));
+      };
+
+      const getAlertBucket = (dueMs, now = nowMs(), upcomingDays = 0, imminentDays = IMMINENT_DAYS) => {
+        if(sameLocalDay(dueMs, now)) return "today";
+        if(dueMs < now) return "past";
+        const d = daysUntil(dueMs, now);
+        if(d <= 0) return "today";
+        if(imminentDays > 0 && d <= imminentDays) return "imminent";
+        if(upcomingDays > 0 && d <= upcomingDays) return "upcoming";
+        return "later";
+      };
+
+      const bucketUi = (bucket) => {
+        switch(bucket){
+          case "upcoming":
+            return { dotClass:"green", pillClass:"green", emoji:"🟢", label:"Próxima" };
+          case "imminent":
+            return { dotClass:"yellow", pillClass:"yellow", emoji:"🟡", label:"Inminente" };
+          case "today":
+            return { dotClass:"orange", pillClass:"orange", emoji:"🟠", label:"Hoy" };
+          case "past":
+            return { dotClass:"red", pillClass:"red", emoji:"🔴", label:"Pasada" };
+          default:
+            return { dotClass:"green", pillClass:"green", emoji:"🟢", label:"—" };
+        }
+      };
+
+      const bucketSortKey = (bucket) => {
+        switch(bucket){
+          case "past": return 0;
+          case "today": return 1;
+          case "imminent": return 2;
+          case "upcoming": return 3;
+          default: return 9;
+        }
+      };
+
+      const initFirebase = () => {
+        try{
+          if(!window.firebase) return false;
+          if(!firebase.apps || !firebase.apps.length){
+            firebase.initializeApp(firebaseConfig);
+          }
+          db = firebase.firestore();
+          return true;
+        }catch(e){
+          console.error(e);
+          return false;
+        }
+      };
+
+      const fetchTemplatesWithAlerts = async () => {
+        const snap = await db.collection(TPL_COLLECTION).get();
+        const out = [];
+        snap.forEach((doc) => {
+          const d = doc.data() || {};
+          const enabled = !!d.alertEnabled;
+          const every = Number(d.alertEveryDays || 0);
+          if(!enabled || every <= 0) return;
+          out.push({
+            id: doc.id,
+            name: String(d.name || ""),
+            category: String(d.category || ""),
+            code: String(d.code || ""),
+            alertEveryDays: every,
+            alertStartAt: (fsToIso(d.alertStartAt) || fsToIso(d.createdAt) || "")
+          });
+        });
+        return out;
+      };
+
+      const fetchAllChecks = async () => {
+        const snap = await db.collection(CHECKS_COLLECTION).get();
+        const map = new Map();
+        snap.forEach((doc) => {
+          const d = doc.data() || {};
+          const tid = String(d.templateId || doc.id || "");
+          if(!tid) return;
+          const completedUntilDueAt = (fsToIso(d.completedUntilDueAt) || fsToIso(d.dueAt) || "");
+          const completedAt = (fsToIso(d.completedAt) || fsToIso(d.doneAt) || "");
+          map.set(tid, { completedUntilDueAt, completedAt });
+        });
+        return map;
+      };
+
+      const computeDueDates = (tpl, check, now = nowMs()) => {
+        const start = toMs(tpl.alertStartAt) || now;
+        const every = Number(tpl.alertEveryDays || 0);
+        if(!every || every <= 0) return [];
+
+        const completedUntil = check?.completedUntilDueAt ? toMs(check.completedUntilDueAt) : 0;
+        const firstDue = addDaysMs(start, every);
+
+        let k0 = 1;
+        if(completedUntil && completedUntil >= firstDue){
+          k0 = Math.floor((completedUntil - start) / (every * 24 * 60 * 60 * 1000)) + 1;
+          if(k0 < 1) k0 = 1;
+        }
+
+        const upcomingDays = getUpcomingDaysForTpl(every);
+        const futureLimitMs = addDaysMs(now, upcomingDays > 0 ? upcomingDays : 0);
+
+        const out = [];
+
+        const kNow = Math.floor((now - start) / (every * 24 * 60 * 60 * 1000));
+        const maxKPast = Math.max(1, kNow);
+
+        const MAX_PAST_ROWS = 25;
+        let pastCount = 0;
+        for(let k = k0; k <= maxKPast; k++){
+          const due = addDaysMs(start, every * k);
+          if(due > now && !sameLocalDay(due, now)) break;
+          out.push(due);
+          pastCount++;
+          if(pastCount >= MAX_PAST_ROWS) break;
+        }
+
+        const MAX_FUTURE_ROWS = 6;
+        let futureCount = 0;
+
+        let kStartFuture = k0;
+        if(out.length){
+          const last = out[out.length - 1];
+          const lastK = Math.round((last - start) / (every * 24 * 60 * 60 * 1000));
+          kStartFuture = Math.max(kStartFuture, lastK + 1);
+        }else{
+          kStartFuture = k0;
+        }
+
+        for(let k = kStartFuture; futureCount < MAX_FUTURE_ROWS; k++){
+          const due = addDaysMs(start, every * k);
+          if(upcomingDays > 0 && due > futureLimitMs) break;
+
+          if(due >= now && !sameLocalDay(due, now)){
+            out.push(due);
+            futureCount++;
+          }else if(sameLocalDay(due, now)){
+            out.push(due);
+          }
+        }
+
+        out.sort((a,b) => a - b);
+        return [...new Set(out)];
+      };
+
+      const markDone = async (tplId, dueMs, existingCheck) => {
+        const completedAt = new Date().toISOString();
+        const completedUntilDueAt = new Date(dueMs).toISOString();
+
+        let prev = 0;
+        try{
+          prev = existingCheck?.completedUntilDueAt ? toMs(existingCheck.completedUntilDueAt) : 0;
+        }catch(_){
+          prev = 0;
+        }
+
+        const nextMax = Math.max(prev || 0, dueMs || 0);
+
+        await db.collection(CHECKS_COLLECTION).doc(String(tplId)).set({
+          templateId: String(tplId),
+          completedAt,
+          completedUntilDueAt: new Date(nextMax).toISOString()
+        }, { merge:true });
+      };
+
+      const renderAlerts = async () => {
+        const host = $("alertsList");
+        const countsHost = $("alertsCounts");
+        if(!host) return;
+
+        if(!db){
+          host.textContent = "Firestore no disponible.";
+          if(countsHost) countsHost.textContent = "";
+          return;
+        }
+
+        let templates = [];
+        let checksMap = new Map();
+
+        try{
+          [templates, checksMap] = await Promise.all([
+            fetchTemplatesWithAlerts(),
+            fetchAllChecks()
+          ]);
+        }catch(err){
+          console.error(err);
+          host.innerHTML = "<i>No se pudieron cargar las alertas (permisos o conexión).</i>";
+          if(countsHost) countsHost.textContent = "";
+          return;
+        }
+
+        const now = nowMs();
+
+        const rowsAll = [];
+        for(const t of templates){
+          const chk = checksMap.get(t.id) || null;
+          const dueList = computeDueDates(t, chk, now);
+          const upcomingDays = getUpcomingDaysForTpl(t.alertEveryDays);
+
+          for(const dueMs of dueList){
+            const bucket = getAlertBucket(dueMs, now, upcomingDays, IMMINENT_DAYS);
+            if(bucket === "later") continue;
+            rowsAll.push({ t, chk, dueMs, bucket });
+          }
+        }
+
+        const rows = rowsAll
+          .filter((x) => x.bucket !== "later")
+          .sort((a,b) => {
+            const ka = bucketSortKey(a.bucket);
+            const kb = bucketSortKey(b.bucket);
+            if(ka !== kb) return ka - kb;
+            return a.dueMs - b.dueMs;
+          });
+
+        const counts = {
+          past: rowsAll.filter((r) => r.bucket === "past").length,
+          today: rowsAll.filter((r) => r.bucket === "today").length,
+          imminent: rowsAll.filter((r) => r.bucket === "imminent").length,
+          upcoming: rowsAll.filter((r) => r.bucket === "upcoming").length
+        };
+
+        if(countsHost){
+          countsHost.textContent = `Pendientes: 🔴 ${counts.past} · 🟠 ${counts.today} · 🟡 ${counts.imminent} · 🟢 ${counts.upcoming}`;
+        }
+
+        if(!rows.length){
+          host.innerHTML = "<i>No hay alertas en la ventana (próximas/inminentes/hoy/pasadas).</i>";
+          return;
+        }
+
+        host.innerHTML = rows.map((x) => {
+          const title = `${esc(x.t.category)} / ${esc(x.t.name)}`;
+          const dueTxt = fmtDate(x.dueMs);
+          const bucket = bucketUi(x.bucket);
+
+          const dUntil = daysUntil(x.dueMs, now);
+          let whenTxt = "";
+          if(x.bucket === "past"){
+            const over = Math.min(-1, dUntil);
+            whenTxt = `Quedan ${over} días`;
+          }else if(x.bucket === "today"){
+            whenTxt = "Quedan 0 días";
+          }else if(x.bucket === "imminent" || x.bucket === "upcoming"){
+            const n = Math.max(1, dUntil);
+            whenTxt = `Quedan ${n} día${n === 1 ? "" : "s"}`;
+          }
+
+          const canMark = (x.bucket === "today" || x.bucket === "past");
+          const cbDisabled = canMark ? "" : "disabled";
+
+          return `
+            <div class="alertRow">
+              <div class="alertHead">
+                <div class="alertTitle">
+                  <span class="dot ${bucket.dotClass}" aria-hidden="true"></span>
+                  <span title="${title}">${title}</span>
+                </div>
+                <div class="alertMeta">
+                  <span class="pill ${bucket.pillClass}">${bucket.emoji} ${esc(bucket.label)}${whenTxt ? " · " + esc(whenTxt) : ""}</span>
+                  <span>Fecha: <b>${esc(dueTxt)}</b></span>
+                  <span>⚠️ Pendiente</span>
+                </div>
+              </div>
+              <label class="markRow">
+                <input type="checkbox"
+                  data-tpl="${esc(x.t.id)}"
+                  data-due="${String(x.dueMs)}"
+                  data-prev="${String(toMs(x.chk?.completedUntilDueAt || "") || 0)}"
+                  ${cbDisabled}>
+                <span>Marcar como realizado</span>
+                ${!canMark ? `<span class="muted">(no se puede marcar todavía)</span>` : ``}
+              </label>
+            </div>
+          `;
+        }).join("");
+
+        host.querySelectorAll('input[type="checkbox"][data-tpl]').forEach((cb) => {
+          cb.addEventListener("change", async (e) => {
+            const el = e.target;
+            if(!(el instanceof HTMLInputElement)) return;
+
+            const tplId = el.getAttribute("data-tpl") || "";
+            const due = parseInt(el.getAttribute("data-due") || "0", 10) || 0;
+
+            if(!el.checked){
+              el.checked = false;
+              return;
+            }
+
+            try{
+              el.disabled = true;
+              const prev = parseInt(el.getAttribute("data-prev") || "0", 10) || 0;
+              const existingCheck = { completedUntilDueAt: prev ? new Date(prev).toISOString() : "" };
+              await markDone(tplId, due, existingCheck);
+              await renderAlerts();
+            }catch(err){
+              console.error(err);
+              alert("Error guardando el check en Firestore.");
+              el.disabled = false;
+              el.checked = false;
+            }
+          }, { passive: true });
+        });
+      };
+
+      const goTo = (file) => {
+        const s = String(file || "");
+        if(!s) return;
+        window.location.href = s;
+      };
+
+      const goAdmin = () => {
+        const pass = prompt("Introduce la contraseña de ADMINISTRADOR:");
+        if(pass === null) return;
+        if(pass === ADMIN_PASSWORD){
+          goTo(ROUTES.admin);
+        }else{
+          alert("Contraseña incorrecta.");
+        }
+      };
+
+      const registerSW = () => {
+        if(!("serviceWorker" in navigator)) return;
         window.addEventListener("load", () => {
           navigator.serviceWorker.register("./sw.js").catch(() => {});
-        });
-      }
+        }, { passive: true });
+      };
+
+      const wireUI = () => {
+        const btnRefresh = $("btnRefresh");
+        const btnDB = $("btnDB");
+        const btnInspector = $("btnInspector");
+        const btnAdmin = $("btnAdmin");
+
+        if(btnRefresh) btnRefresh.addEventListener("click", () => { renderAlerts().catch(console.error); }, { passive: true });
+        if(btnDB) btnDB.addEventListener("click", () => { goTo(ROUTES.db); }, { passive: true });
+        if(btnInspector) btnInspector.addEventListener("click", () => { goTo(ROUTES.inspector); }, { passive: true });
+        if(btnAdmin) btnAdmin.addEventListener("click", () => { goAdmin(); }, { passive: true });
+      };
+
+      const boot = () => {
+        registerSW();
+        wireUI();
+        if(initFirebase()){
+          renderAlerts().catch(console.error);
+        }else{
+          const host = $("alertsList");
+          const countsHost = $("alertsCounts");
+          if(countsHost) countsHost.textContent = "";
+          if(host) host.innerHTML = "<i>No se pudo inicializar Firestore.</i>";
+        }
+      };
+
+      boot();
     })();
-
-    const ROUTES = {
-      db: "base_de_datos.html",
-      inspector: "inspector.html",
-      admin: "administrador.html"
-    };
-
-    const ADMIN_PASSWORD = "Pdft@2026";
-
-    function goTo(file){
-      window.location.href = String(file || "");
-    }
-
-    function goAdmin(){
-      const pass = prompt("Introduce la contraseña de ADMINISTRADOR:");
-      if(pass === null) return;
-      if(pass === ADMIN_PASSWORD){
-        goTo(ROUTES.admin);
-      }else{
-        alert("Contraseña incorrecta.");
-      }
-    }
   </script>
 </body>
 </html>

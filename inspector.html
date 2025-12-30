@@ -15,7 +15,6 @@
     --body-text:#000000;
     --w95-bg:#c0c0c0;
     --w95-light:#ffffff;
-    --w95-dark:#808080;
     --w95-shadow:#404040;
     --w95-blue:#000080;
     --w95-hilite:#dfdfdf;
@@ -28,8 +27,6 @@
     --page-padding: 10mm;
     --logo-w: 190px;
     --logo-h: 140px;
-    --photo-w: 160px;
-    --photo-h: 200px;
   }
 
   @page{ size:A4; margin:0; }
@@ -81,7 +78,7 @@
     border-bottom:2px solid var(--w95-shadow);
   }
 
-  .group{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+  .group{display:flex; gap:10px; flex-wrap:wrap; align-items:center; width:100%}
   .btn,
   .topbar button{
     border-top:2px solid var(--w95-light);
@@ -97,6 +94,7 @@
     color:#000;
     touch-action: manipulation;
   }
+  .topbar button{flex:1 1 160px; min-width:0}
   .topbar button:active,
   .btn:active{
     border-top:2px solid var(--w95-shadow);
@@ -154,7 +152,6 @@
 
   .page{
     width:min(210mm, 100%);
-    min-height:auto;
     margin:0 auto 14px auto;
     background: var(--page-bg);
     padding: var(--page-padding);
@@ -309,25 +306,15 @@
 
   .photos{
     display:grid;
-    grid-template-columns:repeat(4, var(--photo-w));
+    grid-template-columns:repeat(auto-fit, minmax(180px, 1fr));
     gap:10px;
     margin-top:10px;
-    justify-content:start;
-  }
-  .photos img{
-    width:var(--photo-w);
-    height:var(--photo-h);
-    object-fit:contain;
-    border:2px solid var(--border);
-    background:#fff;
-    display:block;
-    box-sizing:border-box;
+    align-items:stretch;
   }
 
   .photo-slot{
     position:relative;
-    width:var(--photo-w);
-    height:var(--photo-h);
+    width:100%;
     border:2px solid var(--border);
     background:#fff;
     box-sizing:border-box;
@@ -335,12 +322,16 @@
     display:flex;
     align-items:center;
     justify-content:center;
+    aspect-ratio:4/5;
+    min-height:170px;
   }
   .photo-slot img{
     border:none;
     width:100%;
     height:100%;
     object-fit:contain;
+    display:block;
+    background:#fff;
   }
   .photo-slot .ph{
     font-size:12px;
@@ -394,6 +385,8 @@
     font-weight:900;
     opacity:.85;
     line-height:1.25;
+    flex:1 1 260px;
+    min-width:0;
   }
 
   @media (max-width: 980px){
@@ -401,11 +394,10 @@
       --page-padding: 14px;
       --logo-w: 150px;
       --logo-h: 110px;
-      --photo-w: 140px;
-      --photo-h: 180px;
     }
     .header-meta{ min-width: 150px; }
     .page{ box-shadow: inset 1px 1px 0 #fff, 0 3px 10px rgba(0,0,0,.14); }
+    .photos{ grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); }
   }
 
   @media (max-width: 720px){
@@ -413,21 +405,6 @@
       --page-padding: 12px;
       --logo-w: 100%;
       --logo-h: 120px;
-      --photo-w: 100%;
-      --photo-h: 210px;
-    }
-
-    .topbar .row{
-      padding:10px;
-      gap:10px;
-    }
-    .group{
-      width:100%;
-      justify-content:stretch;
-    }
-    .group > button{
-      flex:1 1 0;
-      min-width: 0;
     }
 
     .cta{ font-size:16px; padding:16px 14px; }
@@ -446,13 +423,8 @@
       text-align:left;
     }
 
-    .photos{
-      grid-template-columns: 1fr;
-    }
-    .photo-slot{
-      width:100%;
-      height:var(--photo-h);
-    }
+    .photos{ grid-template-columns: 1fr; }
+    .photo-slot{ min-height:210px; }
   }
 
   @media (max-width: 420px){
@@ -480,16 +452,15 @@
     :root{
       --logo-w: 190px;
       --logo-h: 140px;
-      --photo-w: 160px;
-      --photo-h: 200px;
       --page-padding: 10mm;
     }
+    .photo-slot{ aspect-ratio:auto; width:160px; height:200px; min-height:0; }
     .photo-slot .slot-actions,
     .photos-toolbar{ display:none !important; }
+    .photos{ grid-template-columns:repeat(4, 160px); justify-content:start; }
   }
 </style>
 
-<!-- Firebase (compat, sin bundler) -->
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 </head>
@@ -534,7 +505,6 @@
 </div>
 
 <script>
-/* __GLOBAL_ERROR_WIRED__ */
 let __shownGlobalErr = false;
 function __showGlobalErr(prefix, err){
   try{
@@ -547,122 +517,70 @@ function __showGlobalErr(prefix, err){
 window.addEventListener('error', (e)=>__showGlobalErr('Error JS', e.error || e.message));
 window.addEventListener('unhandledrejection', (e)=>__showGlobalErr('Promesa rechazada', e.reason));
 
-
-/* __FS_HELPERS_GLOBAL__ */
-
-  // ===== Helpers Firestore (errores) =====
-  function fsErrShort(e){
-    try{
-      const code = e && (e.code || e.name) ? String(e.code || e.name) : '';
-      const msg = e && e.message ? String(e.message) : String(e||'');
-      const out = (code && msg) ? (code + ' — ' + msg) : (code || msg);
-      return out.trim() || 'error';
-    }catch(_){ return 'error'; }
+function fsErrShort(e){
+  try{
+    const code = e && (e.code || e.name) ? String(e.code || e.name) : '';
+    const msg = e && e.message ? String(e.message) : String(e||'');
+    const out = (code && msg) ? (code + ' — ' + msg) : (code || msg);
+    return out.trim() || 'error';
+  }catch(_){ return 'error'; }
+}
+function fsRulesHint(e){
+  const s = (e && (e.code || '') ? String(e.code) : '') + ' ' + (e && e.message ? String(e.message) : '');
+  if(/permission-denied/i.test(s)){
+    return "\n\nPermisos Firestore: revisa Rules o habilita Auth si procede.";
   }
-  function fsRulesHint(e){
-    const s = (e && (e.code || '') ? String(e.code) : '') + ' ' + (e && e.message ? String(e.message) : '');
-    if(/permission-denied/i.test(s)){
-      return "\n\nPermisos Firestore: abre Rules temporalmente o añade Auth (sin login, por defecto bloquea).";
-    }
-    if(/failed-precondition/i.test(s) && /index/i.test(s)){
-      return "\n\nFalta un índice compuesto (Firestore -> Indexes).";
-    }
-    if(/unavailable|network|offline|fetch/i.test(s)){
-      return "\n\nProblema de red/bloqueo del navegador.";
-    }
-    return "";
+  if(/failed-precondition/i.test(s) && /index/i.test(s)){
+    return "\n\nFalta un índice compuesto (Firestore -> Indexes).";
   }
-
-
-  /* ===== Firebase (Cloud Firestore) ===== */
-  const firebaseConfig = {
-    apiKey: "AIzaSyBLP0yGc_Yh0nKGNYbPcYabTg25LDw2wco",
-    authDomain: "inspector-b4f41.firebaseapp.com",
-    projectId: "inspector-b4f41",
-    storageBucket: "inspector-b4f41.firebasestorage.app",
-    messagingSenderId: "333394046622",
-    appId: "1:333394046622:web:caa18c6f1d341b0a97158f"
-  };
-
-  const TPL_COLLECTION = 'templates_v1';
-  const INS_COLLECTION = 'inspections_v1';
-
-  let __firebaseApp = null;
-  let __fs = null;
-
-  function initFirebase(){
-    try{
-      if(!window.firebase) return false;
-      if(!firebase.apps || !firebase.apps.length){
-        __firebaseApp = firebase.initializeApp(firebaseConfig);
-      }else{
-        __firebaseApp = firebase.app();
-      }
-
-  function fsErrShort(e){
-    try{
-      const code = e && (e.code || e.name) ? String(e.code || e.name) : '';
-      const msg = e && e.message ? String(e.message) : String(e||'');
-      const out = (code && msg) ? (code + ' — ' + msg) : (code || msg);
-      return out.trim() || 'error';
-    }catch(_){ return 'error'; }
+  if(/unavailable|network|offline|fetch/i.test(s)){
+    return "\n\nProblema de red/bloqueo del navegador.";
   }
-  function fsRulesHint(e){
-    const s = (e && (e.code || '') ? String(e.code) : '') + ' ' + (e && e.message ? String(e.message) : '');
-    if(/permission-denied/i.test(s)){
-      return "\n\nParece un problema de REGLAS: si no usas login, Firestore debe permitir lecturas/escrituras públicas (o habilitar Auth).";
-    }
-    if(/failed-precondition/i.test(s) && /index/i.test(s)){
-      return "\n\nParece faltar un índice compuesto en Firestore (consola -> Firestore -> Indexes).";
-    }
-    if(/unavailable|network|offline|fetch/i.test(s)){
-      return "\n\nParece un problema de conexión/red o bloqueo del navegador.";
-    }
-    return "";
-  }
+  return "";
+}
 
-      __fs = firebase.firestore();
-      return true;
-    }catch(e){
-      console.error(e);
-      __fs = null;
-      return false;
+const firebaseConfig = {
+  apiKey: "AIzaSyBLP0yGc_Yh0nKGNYbPcYabTg25LDw2wco",
+  authDomain: "inspector-b4f41.firebaseapp.com",
+  projectId: "inspector-b4f41",
+  storageBucket: "inspector-b4f41.firebasestorage.app",
+  messagingSenderId: "333394046622",
+  appId: "1:333394046622:web:caa18c6f1d341b0a97158f"
+};
+
+const TPL_COLLECTION = 'templates_v1';
+const INS_COLLECTION = 'inspections_v1';
+
+let __firebaseApp = null;
+let __fs = null;
+
+function initFirebase(){
+  try{
+    if(!window.firebase) return false;
+    if(!firebase.apps || !firebase.apps.length){
+      __firebaseApp = firebase.initializeApp(firebaseConfig);
+    }else{
+      __firebaseApp = firebase.app();
     }
+    __fs = firebase.firestore();
+    return true;
+  }catch(e){
+    console.error(e);
+    __fs = null;
+    return false;
   }
-  function cloudReady(){ return !!__fs; }
+}
+function cloudReady(){ return !!__fs; }
 
-  async function cloudFetchAllTemplates(){
-    if(!cloudReady()) return [];
-    const snap = await __fs.collection(TPL_COLLECTION).get();
-    const arr = [];
-    snap.forEach(doc=>{
-      const d = doc.data() || {};
-      const data = (d.data && typeof d.data === 'object') ? d.data : null;
-      if(!data) return;
-      arr.push({
-        id: doc.id,
-        name: String(d.name || ''),
-        category: String(d.category || ''),
-        code: String(d.code || ''),
-        createdAt: d.createdAt ? String(d.createdAt) : '',
-        updatedAt: d.updatedAt ? String(d.updatedAt) : '',
-        data
-      });
-    });
-    return arr.filter(t=>t.id && t.name && t.category && t.data);
-  }
-
-  async function cloudFindTemplateByCode(code){
-    if(!cloudReady()) return null;
-    const c = normalize(code);
-    if(!c) return null;
-    const qs = await __fs.collection(TPL_COLLECTION).where('code','==',c).limit(1).get();
-    if(qs.empty) return null;
-    const doc = qs.docs[0];
+async function cloudFetchAllTemplates(){
+  if(!cloudReady()) return [];
+  const snap = await __fs.collection(TPL_COLLECTION).get();
+  const arr = [];
+  snap.forEach(doc=>{
     const d = doc.data() || {};
     const data = (d.data && typeof d.data === 'object') ? d.data : null;
-    if(!data) return null;
-    return {
+    if(!data) return;
+    arr.push({
       id: doc.id,
       name: String(d.name || ''),
       category: String(d.category || ''),
@@ -670,1094 +588,815 @@ window.addEventListener('unhandledrejection', (e)=>__showGlobalErr('Promesa rech
       createdAt: d.createdAt ? String(d.createdAt) : '',
       updatedAt: d.updatedAt ? String(d.updatedAt) : '',
       data
-    };
-  }
-
-  async function cloudSaveInspectionDoc(payload){
-    if(!cloudReady()) throw new Error('Firestore no está inicializado.');
-    const id = String(payload.id || makeId());
-    await __fs.collection(INS_COLLECTION).doc(id).set(payload, { merge:true });
-    return id;
-  }
-
-  async function cloudFetchAllInspections(){
-    if(!cloudReady()) return [];
-    const snap = await __fs.collection(INS_COLLECTION).get();
-    const arr = [];
-    snap.forEach(doc=>{
-      const d = doc.data() || {};
-      arr.push({ id: doc.id, ...d });
     });
-    return arr;
-  }
+  });
+  return arr.filter(t=>t.id && t.name && t.category && t.data);
+}
 
+async function cloudFindTemplateByCode(code){
+  if(!cloudReady()) return null;
+  const c = normalize(code);
+  if(!c) return null;
+  const qs = await __fs.collection(TPL_COLLECTION).where('code','==',c).limit(1).get();
+  if(qs.empty) return null;
+  const doc = qs.docs[0];
+  const d = doc.data() || {};
+  const data = (d.data && typeof d.data === 'object') ? d.data : null;
+  if(!data) return null;
+  return {
+    id: doc.id,
+    name: String(d.name || ''),
+    category: String(d.category || ''),
+    code: String(d.code || ''),
+    createdAt: d.createdAt ? String(d.createdAt) : '',
+    updatedAt: d.updatedAt ? String(d.updatedAt) : '',
+    data
+  };
+}
 
-  const FIXED_LOGO_URL = 'https://i.ibb.co/BK6jvxPG/image.png';
+async function cloudSaveInspectionDoc(payload){
+  if(!cloudReady()) throw new Error('Firestore no está inicializado.');
+  const id = String(payload.id || makeId());
+  await __fs.collection(INS_COLLECTION).doc(id).set(payload, { merge:true });
+  return id;
+}
 
-  const PHOTO_MAX_EDGE = 1600;
-  const PHOTO_JPEG_QUALITY = 0.82;
-  const PHOTO_SLOTS_DEFAULT = 4;
+async function cloudFetchAllInspections(){
+  if(!cloudReady()) return [];
+  const snap = await __fs.collection(INS_COLLECTION).get();
+  const arr = [];
+  snap.forEach(doc=>{
+    const d = doc.data() || {};
+    arr.push({ id: doc.id, ...d });
+  });
+  return arr;
+}
 
-  const db = [];
-  let currentId = null;
-  let lastEditedISO = null;
+const FIXED_LOGO_URL = 'https://i.ibb.co/BK6jvxPG/image.png';
 
-  let nfcReader = null;
-  let nfcActive = false;
-  let nfcEverStarted = false;
-  let lastNFCTag = '';
-  let lastNFCTimeISO = null;
-  let nfcStatusText = 'Inicializando…';
-  let pendingOpenFromNFC = false;
+const PHOTO_MAX_EDGE = 1600;
+const PHOTO_JPEG_QUALITY = 0.82;
+const PHOTO_SLOTS_DEFAULT = 4;
 
-  let lastOpenedTag = '';
+const db = [];
+let currentId = null;
+let lastEditedISO = null;
 
-  const STORAGE_KEY = null;
-  const INSPECTIONS_KEY = null;
+let nfcReader = null;
+let nfcActive = false;
+let nfcEverStarted = false;
+let lastNFCTag = '';
+let lastNFCTimeISO = null;
+let nfcStatusText = 'Inicializando…';
+let pendingOpenFromNFC = false;
 
-  const inspections = [];
+let lastOpenedTag = '';
 
-  async function loadInspections(){
-    inspections.length = 0;
-    if(!cloudReady()) return false;
-    try{
-      const rows = await cloudFetchAllInspections();
-      rows.sort((a,b)=> String(b.updatedAt||b.savedAtISO||'').localeCompare(String(a.updatedAt||a.savedAtISO||'')));
-      for(const d of rows){
-        // Soportar inspecciones guardadas como {name,category,code,data:ins}
-        const ins = (d && d.data && typeof d.data === 'object') ? d.data : d;
-        if(!ins || typeof ins !== 'object') continue;
-        if(!ins.id || !ins.data) continue;
-        inspections.push(ins);
-      }
-      return true;
-    }catch(e){
-      console.error(e);
-      return false;
+const inspections = [];
+
+async function loadInspections(){
+  inspections.length = 0;
+  if(!cloudReady()) return false;
+  try{
+    const rows = await cloudFetchAllInspections();
+    rows.sort((a,b)=> String(b.updatedAt||b.savedAtISO||'').localeCompare(String(a.updatedAt||a.savedAtISO||'')));
+    for(const d of rows){
+      const ins = (d && d.data && typeof d.data === 'object') ? d.data : d;
+      if(!ins || typeof ins !== 'object') continue;
+      if(!ins.id || !ins.data) continue;
+      inspections.push(ins);
     }
-  }
-
-  function saveInspections(){
-    // Persistir inspecciones en Firestore (fuente de verdad)
-    if(!cloudReady()) return;
-    // Sincroniza solo las nuevas inspecciones añadidas desde la última sync
-    if(typeof window.__insLastSyncedIndex !== 'number') window.__insLastSyncedIndex = 0;
-    if(window.__insSyncInFlight) return;
-    const start = Math.max(0, window.__insLastSyncedIndex|0);
-    const pending = inspections.slice(start);
-    if(!pending.length) return;
-
-    window.__insSyncInFlight = true;
-    (async ()=>{
-      // chunk defensivo (batch limit 500)
-      let i = 0;
-      while(i < pending.length){
-        const chunk = pending.slice(i, i+400);
-        const batch = __fs.batch();
-        for(const ins of chunk){
-          if(!ins || typeof ins !== 'object' || !ins.id) continue;
-          const payload = {
-            ...ins,
-            updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-          };
-          const ref = __fs.collection(INS_COLLECTION).doc(String(ins.id));
-          batch.set(ref, payload, { merge:true });
-        }
-        await batch.commit();
-        i += chunk.length;
-      }
-      window.__insLastSyncedIndex = inspections.length;
-    })().catch(e=>{
-      console.error(e);
-      alert('No se pudo guardar en Firestore. ' + fsErrShort(e) + (fsRulesHint(e) ? ('\n' + fsRulesHint(e)) : ''));
-    }).finally(()=>{
-      window.__insSyncInFlight = false;
-    });
-  }
-
-  function safeLSSet(key, value){ return false; }
-  function safeLSGet(key){ return null; }
-  function safeLSRemove(key){ return false; }
-
-  function serializeState(){
-    return {
-      v: 1,
-      savedAt: nowISO(),
-      db,
-      currentId,
-      lastEditedISO,
-      lastNFCTag,
-      lastNFCTimeISO,
-      lastOpenedTag
-    };
-  }
-
-  function validateTemplate(t){
-    if(!t || typeof t !== 'object') return false;
-    if(!t.id || !t.category || !t.form) return false;
-    if(!t.baseData || typeof t.baseData !== 'object') return false;
-    if(!t.data || typeof t.data !== 'object') return false;
-    if(!Array.isArray(t.tags)) t.tags = [];
     return true;
-  }
-
-
-  async function loadTemplatesFromCloud(){
-    if(!cloudReady()) return false;
-    try{
-      const templates = await cloudFetchAllTemplates();
-      db.length = 0;
-      for(const t of templates){
-        const layout = (t.data && typeof t.data === 'object') ? deepClone(t.data) : null;
-        if(!layout) continue;
-        layout.header = (layout.header && typeof layout.header==='object') ? layout.header : {};
-        layout.theme = (layout.theme && typeof layout.theme==='object') ? layout.theme : {};
-        layout.fields = Array.isArray(layout.fields) ? layout.fields : [];
-        layout.header.logo = FIXED_LOGO_URL;
-
-        // Normaliza campos de fotos para evitar nulls
-        for(const f of layout.fields){
-          if(f && normalize(f.type)==='photos'){
-            f.config = (f.config && typeof f.config==='object') ? f.config : {};
-            const slots = getPhotoSlotsForField(f);
-            f.images = Array.isArray(f.images) ? f.images : [];
-            f.images = f.images.slice(0, slots);
-            while(f.images.length < slots) f.images.push(null);
-          }
-        }
-
-        const tags = [];
-        const code = normalize(t.code || '');
-        if(code) tags.push(code);
-
-        db.push({
-          id: String(t.id),
-          category: normalize(t.category),
-          form: normalize(t.name),
-          tags,
-          baseData: deepClone(layout),
-          data: deepClone(layout)
-        });
-      }
-      return true;
-    }catch(e){
-      console.error(e);
-      return false;
-    }
-  }
-
-
-  function loadState(){
-    // Fuente de verdad: Firestore. No persistimos en local.
+  }catch(e){
+    console.error(e);
     return false;
   }
+}
 
-  function saveState(){
-    // no-op (sin localStorage)
+function escapeHTML(str){
+  return String(str ?? '').replace(/[&<>"']/g, m=>({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[m]));
+}
+function escapeAttr(str){
+  return escapeHTML(str).replace(/"/g,'&quot;');
+}
+function safeJSONParse(txt){
+  try{ return JSON.parse(txt); }catch(e){ return null; }
+}
+function normalize(s){ return String(s ?? '').trim(); }
+function nowISO(){ return new Date().toISOString(); }
+function fmtLastEdited(iso){
+  if(!iso) return '—';
+  try{ return new Date(iso).toLocaleString('es-ES'); }catch(e){ return String(iso); }
+}
+function updateLastEditedUI(){
+  const el = document.getElementById('lastEdited');
+  if(el) el.textContent = fmtLastEdited(lastEditedISO);
+}
+function makeId(){
+  if(window.crypto && typeof window.crypto.randomUUID === 'function') return window.crypto.randomUUID();
+  return 'id_' + Math.random().toString(16).slice(2) + '_' + Date.now().toString(16);
+}
+function deepClone(obj){
+  try{ return structuredClone(obj); }catch(e){ return JSON.parse(JSON.stringify(obj)); }
+}
+function applyFixedLogo(){
+  const logoBox = document.getElementById('logoBox');
+  if(!logoBox) return;
+  logoBox.innerHTML = '';
+  const img = document.createElement('img');
+  img.src = FIXED_LOGO_URL;
+  img.alt = 'Logo';
+  logoBox.appendChild(img);
+  logoBox.dataset.logo = FIXED_LOGO_URL;
+}
+function autoGrow(t){
+  t.style.height = 'auto';
+  t.style.height = (t.scrollHeight + 2) + 'px';
+}
+function refreshAutoGrow(){
+  document.querySelectorAll('textarea.autogrow').forEach(autoGrow);
+}
+document.addEventListener('input', (e)=>{
+  if(e.target && e.target.matches('textarea.autogrow')) autoGrow(e.target);
+});
+
+function setVar(name, value){
+  if(!value) return;
+  document.documentElement.style.setProperty(name, value);
+}
+
+function getCurrentItem(){
+  if(!currentId) return null;
+  return db.find(x=>x.id===currentId) || null;
+}
+
+function exportStamp(date){
+  const d = date instanceof Date ? date : new Date();
+  const pad = (n)=> String(n).padStart(2,'0');
+  const y = d.getFullYear();
+  const m = pad(d.getMonth()+1);
+  const da = pad(d.getDate());
+  const h = pad(d.getHours());
+  const mi = pad(d.getMinutes());
+  const se = pad(d.getSeconds());
+  return `${y}-${m}-${da}_${h}-${mi}-${se}`;
+}
+
+function saveBlob(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename || 'export.json';
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(()=>{
+    URL.revokeObjectURL(url);
+    a.remove();
+  }, 2500);
+}
+
+function updateReadTagButtonText(){
+  const btn = document.getElementById('btnReadTag');
+  if(!btn) return;
+  const hasDB = db.length > 0;
+  if(!hasDB){
+    btn.textContent = 'LEER TAG';
+    return;
   }
-
-  function serializeInspection(item){
-    refreshAutoGrow();
-    touchEdited();
-    const lastISO = normalize(lastEditedISO) || nowISO();
-    const data = deepClone(item.data || {});
-    data.header = (data.header && typeof data.header === 'object') ? data.header : {};
-    data.header.logo = FIXED_LOGO_URL;
-    data.header.lastEdited = lastISO;
-
-    data.meta = (data.meta && typeof data.meta === 'object') ? data.meta : {};
-    data.meta.category = data.meta.category || item.category || '';
-    data.meta.name = data.meta.name || item.form || '';
-
-    return {
-      id: makeId(),                     // SIEMPRE NUEVO ID -> inspección distinta
-      savedAtISO: nowISO(),
-      templateId: item.id || '',
-      tag: normalize(lastOpenedTag) || normalize(lastNFCTag) || '',
-      category: item.category || data.meta.category || '',
-      form: item.form || data.meta.name || '',
-      lastEditedISO: lastISO,
-      data
-    };
+  const q = normalize(lastNFCTag);
+  const opened = normalize(lastOpenedTag);
+  if(q && (!opened || q.toLowerCase() !== opened.toLowerCase())){
+    btn.textContent = 'ABRIR FORMULARIO';
+  }else{
+    btn.textContent = 'LEER TAG';
   }
+}
 
-  
+function updateButtons(){
+  const hasDB = db.length > 0;
+  const hasCurrent = !!getCurrentItem();
+  const btnRead = document.getElementById('btnReadTag');
+  if(btnRead) btnRead.disabled = !hasDB;
+  const elPDF = document.getElementById('btnExportPDF');
+  if(elPDF) elPDF.disabled = !hasCurrent;
+  const elReset = document.getElementById('btnResetForm');
+  if(elReset) elReset.disabled = !hasCurrent;
+  const elSave = document.getElementById('btnSaveInspection');
+  if(elSave) elSave.disabled = !hasCurrent;
+  updateReadTagButtonText();
+}
 
-  function escapeHTML(str){
-    return String(str ?? '').replace(/[&<>"']/g, m=>({
-      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-    }[m]));
+function updateStatus(){
+  const el = document.getElementById('statusLine');
+  if(!el) return;
+  const count = db.length;
+  const insCount = inspections.length;
+  const item = getCurrentItem();
+  const a = (count === 0) ? 'Sin JSON importado.' : `Plantillas cargadas: ${count}`;
+  const ins = `Inspecciones guardadas: ${insCount}`;
+  const b = item ? `${escapeHTML(item.category)} / ${escapeHTML(item.form)}` : 'Ninguno.';
+  el.innerHTML = `<div><b>Estado:</b> ${a}</div><div><b>Inspecciones:</b> ${ins}</div><div><b>Formulario:</b> ${b}</div><div><b>NFC:</b> ${escapeHTML(nfcStatusText || '—')}</div>`;
+  updateButtons();
+}
+
+function exportPDF(){
+  const item = getCurrentItem();
+  if(!item){
+    alert('No hay formulario abierto.');
+    return;
   }
-  function escapeAttr(str){
-    return escapeHTML(str).replace(/"/g,'&quot;');
+  const oldTitle = document.title;
+  document.title = `${item.category} - ${item.form}`;
+  refreshAutoGrow();
+  window.print();
+  document.title = oldTitle;
+}
+
+function exportCloudInfoBBDD(){
+  alert('Modo nube: la Base de datos lee directamente desde Firestore.\n\nNo hace falta exportar/importar JSON.');
+}
+
+function serializeInspection(item){
+  refreshAutoGrow();
+  touchEdited();
+  const lastISO = normalize(lastEditedISO) || nowISO();
+  const data = deepClone(item.data || {});
+  data.header = (data.header && typeof data.header === 'object') ? data.header : {};
+  data.header.logo = FIXED_LOGO_URL;
+  data.header.lastEdited = lastISO;
+  data.meta = (data.meta && typeof data.meta === 'object') ? data.meta : {};
+  data.meta.category = data.meta.category || item.category || '';
+  data.meta.name = data.meta.name || item.form || '';
+  return {
+    id: makeId(),
+    savedAtISO: nowISO(),
+    templateId: item.id || '',
+    tag: normalize(lastOpenedTag) || normalize(lastNFCTag) || '',
+    category: item.category || data.meta.category || '',
+    form: item.form || data.meta.name || '',
+    lastEditedISO: lastISO,
+    data
+  };
+}
+
+async function saveCurrentInspection(){
+  const item = getCurrentItem();
+  if(!item || !item.data){
+    alert('No hay formulario abierto.');
+    return;
   }
-  function safeJSONParse(txt){
-    try{ return JSON.parse(txt); }catch(e){ return null; }
-  }
-  function normalize(s){ return String(s ?? '').trim(); }
-  function nowISO(){ return new Date().toISOString(); }
-  function fmtLastEdited(iso){
-    if(!iso) return '—';
-    try{ return new Date(iso).toLocaleString('es-ES'); }catch(e){ return String(iso); }
-  }
-  function updateLastEditedUI(){
-    document.getElementById('lastEdited').textContent = fmtLastEdited(lastEditedISO);
-  }
-  function makeId(){
-    if(window.crypto && typeof window.crypto.randomUUID === 'function') return window.crypto.randomUUID();
-    return 'id_' + Math.random().toString(16).slice(2) + '_' + Date.now().toString(16);
-  }
-  function deepClone(obj){
-    try{ return structuredClone(obj); }catch(e){ return JSON.parse(JSON.stringify(obj)); }
-  }
-  function applyFixedLogo(){
-    const logoBox = document.getElementById('logoBox');
-    if(!logoBox) return;
-    logoBox.innerHTML = '';
-    const img = document.createElement('img');
-    img.src = FIXED_LOGO_URL;
-    img.alt = 'Logo';
-    logoBox.appendChild(img);
-    logoBox.dataset.logo = FIXED_LOGO_URL;
-  }
-  function autoGrow(t){
-    t.style.height = 'auto';
-    t.style.height = (t.scrollHeight + 2) + 'px';
-  }
-  function refreshAutoGrow(){
-    document.querySelectorAll('textarea.autogrow').forEach(autoGrow);
-  }
-  document.addEventListener('input', (e)=>{
-    if(e.target && e.target.matches('textarea.autogrow')) autoGrow(e.target);
-  });
-
-  function setVar(name, value){
-    if(!value) return;
-    document.documentElement.style.setProperty(name, value);
-  }
-
-  function getCurrentItem(){
-    if(!currentId) return null;
-    return db.find(x=>x.id===currentId) || null;
-  }
-
-  function exportStamp(date){
-    const d = date instanceof Date ? date : new Date();
-    const pad = (n)=> String(n).padStart(2,'0');
-    const y = d.getFullYear();
-    const m = pad(d.getMonth()+1);
-    const da = pad(d.getDate());
-    const h = pad(d.getHours());
-    const mi = pad(d.getMinutes());
-    const se = pad(d.getSeconds());
-    return `${y}-${m}-${da}_${h}-${mi}-${se}`;
-  }
-
-  function makeSafeName(name, fallback){
-    const out = normalize(name)
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g,'')
-      .replace(/[^a-zA-Z0-9_\-]+/g,'_')
-      .replace(/_+/g,'_')
-      .replace(/^_+|_+$/g,'');
-    return out || fallback || 'Archivo';
-  }
-
-  function saveBlob(blob, filename){
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename || 'export.json';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(()=>{
-      URL.revokeObjectURL(url);
-      a.remove();
-    }, 2500);
-  }
-
-  function updateReadTagButtonText(){
-    const btn = document.getElementById('btnReadTag');
-    if(!btn) return;
-
-    const hasDB = db.length > 0;
-    if(!hasDB){
-      btn.textContent = 'LEER TAG';
-      return;
-    }
-
-    const q = normalize(lastNFCTag);
-    const opened = normalize(lastOpenedTag);
-
-    if(q && (!opened || q.toLowerCase() !== opened.toLowerCase())){
-      btn.textContent = 'ABRIR FORMULARIO';
-    }else{
-      btn.textContent = 'LEER TAG';
-    }
-  }
-
-  function updateButtons(){
-    const hasDB = db.length > 0;
-    const hasCurrent = !!getCurrentItem();
-    const hasInspections = inspections.length > 0;
-    const btnRead = document.getElementById('btnReadTag');
-
-    if(btnRead) btnRead.disabled = !hasDB;
-
-    const elPDF = document.getElementById('btnExportPDF');
-    if(elPDF) elPDF.disabled = !hasCurrent;
-
-    const elJSON = document.getElementById('btnExportJSON');
-    if(elJSON) elJSON.disabled = !hasInspections;
-
-    const elReset = document.getElementById('btnResetForm');
-    if(elReset) elReset.disabled = !hasCurrent;
-
-    const elSave = document.getElementById('btnSaveInspection');
-    if(elSave) elSave.disabled = !hasCurrent;
-
-    updateReadTagButtonText();
-  }
-
-  function updateStatus(){
-    const el = document.getElementById('statusLine');
-    const count = db.length;
-    const insCount = inspections.length;
-    const item = getCurrentItem();
-
-    const a = (count === 0)
-      ? 'Sin JSON importado.'
-      : `Plantillas cargadas: ${count}`;
-
-    const ins = `Inspecciones guardadas: ${insCount}`;
-
-    const b = item
-      ? `${escapeHTML(item.category)} / ${escapeHTML(item.form)}`
-      : 'Ninguno.';
-
-    el.innerHTML = `<div><b>Estado:</b> ${a}</div><div><b>Inspecciones:</b> ${ins}</div><div><b>Formulario:</b> ${b}</div><div><b>NFC:</b> ${escapeHTML(nfcStatusText || '—')}</div>`;
-    updateButtons();
-  }
-
-  function exportPDF(){
-    const item = getCurrentItem();
-    if(!item){
-      alert('No hay formulario abierto.');
-      return;
-    }
-
-    const oldTitle = document.title;
-    document.title = `${item.category} - ${item.form}`;
-
-    refreshAutoGrow();
-    window.print();
-
-    document.title = oldTitle;
-  }
-
-  
-  // ===== Modo nube: botones legacy (sin export/import local) =====
-  function exportCloudInfoBBDD(){
-    alert('Modo nube: la Base de datos lee directamente desde Firestore.\n\nNo hace falta exportar/importar JSON.');
-  }
-
-
-// ✅ MODIFICADO: al guardar, se guarda y se reinicia el formulario automáticamente.
-  // Guardar el mismo formulario varias veces => varias inspecciones distintas (id nuevo cada vez).
-  async function saveCurrentInspection(){
-    const item = getCurrentItem();
-    if(!item || !item.data){
-      alert('No hay formulario abierto.');
-      return;
-    }
-
-    const ins = serializeInspection(item);
-
-    // Persistir en Firestore (fuente de verdad)
-    if(cloudReady()){
-      try{
-        const payload = {
-  // duplicados para búsquedas rápidas en Firestore
-  category: String(ins.category || ''),
-  code: String(ins.tag || ''),
-  tag: String(ins.tag || ''),
-  createdAt: String(ins.savedAtISO || nowISO()),
-  updatedAt: String(ins.lastEditedISO || ins.savedAtISO || nowISO()),
-  // el documento guarda la inspección con la MISMA forma que antes
-  ...ins
-};
-        await cloudSaveInspectionDoc({ id: ins.id, ...payload });
-      }catch(e){
-        console.error(e);
-        alert('No se pudo guardar en Firestore.\n' + fsErrShort(e) + fsRulesHint(e));
-        return;
-      }
-    }else{
-      alert('Firestore no está disponible. No se guardará la inspección.');
-      return;
-    }
-
-    // Mantener cache en memoria (para exportar JSON si quieres)
-    inspections.push(ins);
-    
-    // Reinicio inmediato del formulario (sin confirmación)
-    resetCurrentForm({ silent: true });
-
-    updateStatus();
-    alert('Inspección guardada. Formulario reiniciado.');
-  }
-
-  function exportAllInspectionsForDB(){
-    if(inspections.length === 0){
-      alert('No hay inspecciones guardadas.');
-      return;
-    }
-
-    const out = {
-      format: 'inspector_inspections_v1',
-      exportedAtISO: nowISO(),
-      inspections: inspections.map(x=>deepClone(x)) // ✅ 100% de todas las inspecciones guardadas
-    };
-
-    const filename = `inspecciones__${exportStamp(new Date())}.json`;
-
+  const ins = serializeInspection(item);
+  if(cloudReady()){
     try{
-      const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json;charset=utf-8' });
-      saveBlob(blob, filename);
-    }catch(e){
-      alert('No se pudo exportar el JSON.');
-    }
-  }
-
-  function readFileAsDataURL(file){
-    return new Promise((resolve, reject)=>{
-      const fr = new FileReader();
-      fr.onload = ()=> resolve(String(fr.result || ''));
-      fr.onerror = ()=> reject(new Error('No se pudo leer el archivo.'));
-      fr.readAsDataURL(file);
-    });
-  }
-
-  function loadImageFromDataURL(dataUrl){
-    return new Promise((resolve, reject)=>{
-      const img = new Image();
-      img.onload = ()=> resolve(img);
-      img.onerror = ()=> reject(new Error('No se pudo cargar la imagen.'));
-      img.src = dataUrl;
-    });
-  }
-
-  async function fileToCompressedDataURL(file){
-    const rawDataUrl = await readFileAsDataURL(file);
-
-    try{
-      const img = await loadImageFromDataURL(rawDataUrl);
-
-      const w = img.naturalWidth || img.width || 0;
-      const h = img.naturalHeight || img.height || 0;
-      if(!w || !h) return rawDataUrl;
-
-      const maxEdge = PHOTO_MAX_EDGE;
-      const scale = Math.min(1, maxEdge / Math.max(w, h));
-      const tw = Math.max(1, Math.round(w * scale));
-      const th = Math.max(1, Math.round(h * scale));
-
-      if(scale === 1){
-        return rawDataUrl;
-      }
-
-      const canvas = document.createElement('canvas');
-      canvas.width = tw;
-      canvas.height = th;
-      const ctx = canvas.getContext('2d', { alpha: false });
-      if(!ctx) return rawDataUrl;
-
-      ctx.drawImage(img, 0, 0, tw, th);
-
-      const out = canvas.toDataURL('image/jpeg', PHOTO_JPEG_QUALITY);
-      return out || rawDataUrl;
-    }catch(e){
-      return rawDataUrl;
-    }
-  }
-
-  function clampInt(n, min, max){
-    const x = parseInt(String(n), 10);
-    if(!Number.isFinite(x)) return min;
-    return Math.max(min, Math.min(max, x));
-  }
-
-  function getPhotoSlotsForField(fieldObj){
-    const cfg = (fieldObj && fieldObj.config && typeof fieldObj.config==='object') ? fieldObj.config : {};
-    const slots = clampInt(cfg.slots ?? PHOTO_SLOTS_DEFAULT, 1, 12);
-    return slots;
-  }
-
-  function openPhotoPicker({ multiple=false } = {}){
-    return new Promise((resolve)=>{
-      const inp = document.createElement('input');
-      inp.type = 'file';
-      inp.accept = 'image/*';
-      inp.setAttribute('capture', 'environment');
-      inp.multiple = !!multiple;
-      inp.onchange = ()=> {
-        const files = [...(inp.files || [])].filter(f => f && f.type && f.type.startsWith('image/'));
-        resolve(files);
+      const payload = {
+        category: String(ins.category || ''),
+        code: String(ins.tag || ''),
+        tag: String(ins.tag || ''),
+        createdAt: String(ins.savedAtISO || nowISO()),
+        updatedAt: String(ins.lastEditedISO || ins.savedAtISO || nowISO()),
+        ...ins
       };
-      inp.click();
-    });
-  }
-
-  function touchEdited(){
-    lastEditedISO = nowISO();
-    updateLastEditedUI();
-
-    const item = getCurrentItem();
-    if(item && item.data){
-      item.data.header = item.data.header || {};
-      item.data.header.lastEdited = lastEditedISO;
+      await cloudSaveInspectionDoc({ id: ins.id, ...payload });
+    }catch(e){
+      console.error(e);
+      alert('No se pudo guardar en Firestore.\n' + fsErrShort(e) + fsRulesHint(e));
+      return;
     }
-
-    saveState();
+  }else{
+    alert('Firestore no está disponible. No se guardará la inspección.');
+    return;
   }
+  inspections.push(ins);
+  resetCurrentForm({ silent: true });
+  updateStatus();
+  alert('Inspección guardada. Formulario reiniciado.');
+}
 
-  async function addPhotosToField(idx, { replaceAt = null } = {}){
-    const item = getCurrentItem();
-    if(!item || !item.data) return;
+function exportAllInspectionsForDB(){
+  if(inspections.length === 0){
+    alert('No hay inspecciones guardadas.');
+    return;
+  }
+  const out = {
+    format: 'inspector_inspections_v1',
+    exportedAtISO: nowISO(),
+    inspections: inspections.map(x=>deepClone(x))
+  };
+  const filename = `inspecciones__${exportStamp(new Date())}.json`;
+  try{
+    const blob = new Blob([JSON.stringify(out, null, 2)], { type: 'application/json;charset=utf-8' });
+    saveBlob(blob, filename);
+  }catch(e){
+    alert('No se pudo exportar el JSON.');
+  }
+}
 
-    const fields = Array.isArray(item.data.fields) ? item.data.fields : [];
-    const f = fields[idx];
-    if(!f) return;
+function readFileAsDataURL(file){
+  return new Promise((resolve, reject)=>{
+    const fr = new FileReader();
+    fr.onload = ()=> resolve(String(fr.result || ''));
+    fr.onerror = ()=> reject(new Error('No se pudo leer el archivo.'));
+    fr.readAsDataURL(file);
+  });
+}
 
-    f.images = Array.isArray(f.images) ? f.images : [];
-    f.config = (f.config && typeof f.config==='object') ? f.config : {};
+function loadImageFromDataURL(dataUrl){
+  return new Promise((resolve, reject)=>{
+    const img = new Image();
+    img.onload = ()=> resolve(img);
+    img.onerror = ()=> reject(new Error('No se pudo cargar la imagen.'));
+    img.src = dataUrl;
+  });
+}
 
-    const slots = getPhotoSlotsForField(f);
+async function fileToCompressedDataURL(file){
+  const rawDataUrl = await readFileAsDataURL(file);
+  try{
+    const img = await loadImageFromDataURL(rawDataUrl);
+    const w = img.naturalWidth || img.width || 0;
+    const h = img.naturalHeight || img.height || 0;
+    if(!w || !h) return rawDataUrl;
+    const maxEdge = PHOTO_MAX_EDGE;
+    const scale = Math.min(1, maxEdge / Math.max(w, h));
+    const tw = Math.max(1, Math.round(w * scale));
+    const th = Math.max(1, Math.round(h * scale));
+    if(scale === 1) return rawDataUrl;
+    const canvas = document.createElement('canvas');
+    canvas.width = tw;
+    canvas.height = th;
+    const ctx = canvas.getContext('2d', { alpha: false });
+    if(!ctx) return rawDataUrl;
+    ctx.drawImage(img, 0, 0, tw, th);
+    const out = canvas.toDataURL('image/jpeg', PHOTO_JPEG_QUALITY);
+    return out || rawDataUrl;
+  }catch(e){
+    return rawDataUrl;
+  }
+}
 
-    const files = await openPhotoPicker({ multiple: replaceAt === null });
-    if(!files || files.length === 0) return;
+function clampInt(n, min, max){
+  const x = parseInt(String(n), 10);
+  if(!Number.isFinite(x)) return min;
+  return Math.max(min, Math.min(max, x));
+}
 
-    try{
-      if(replaceAt !== null){
-        const pos = clampInt(replaceAt, 0, slots - 1);
-        const dataUrl = await fileToCompressedDataURL(files[0]);
-        f.images[pos] = dataUrl;
-      }else{
-        for(const file of files){
-          if(f.images.filter(Boolean).length >= slots) break;
-          const dataUrl = await fileToCompressedDataURL(file);
+function getPhotoSlotsForField(fieldObj){
+  const cfg = (fieldObj && fieldObj.config && typeof fieldObj.config==='object') ? fieldObj.config : {};
+  const slots = clampInt(cfg.slots ?? PHOTO_SLOTS_DEFAULT, 1, 12);
+  return slots;
+}
 
-          let putAt = f.images.findIndex(x => !x);
-          if(putAt === -1) putAt = f.images.length;
+function openPhotoPicker({ multiple=false } = {}){
+  return new Promise((resolve)=>{
+    const inp = document.createElement('input');
+    inp.type = 'file';
+    inp.accept = 'image/*';
+    inp.setAttribute('capture', 'environment');
+    inp.multiple = !!multiple;
+    inp.onchange = ()=> {
+      const files = [...(inp.files || [])].filter(f => f && f.type && f.type.startsWith('image/'));
+      resolve(files);
+    };
+    inp.click();
+  });
+}
 
-          if(putAt >= slots) break;
+function touchEdited(){
+  lastEditedISO = nowISO();
+  updateLastEditedUI();
+  const item = getCurrentItem();
+  if(item && item.data){
+    item.data.header = item.data.header || {};
+    item.data.header.lastEdited = lastEditedISO;
+  }
+}
 
-          f.images[putAt] = dataUrl;
-        }
+async function addPhotosToField(idx, { replaceAt = null } = {}){
+  const item = getCurrentItem();
+  if(!item || !item.data) return;
+  const fields = Array.isArray(item.data.fields) ? item.data.fields : [];
+  const f = fields[idx];
+  if(!f) return;
+  f.images = Array.isArray(f.images) ? f.images : [];
+  f.config = (f.config && typeof f.config==='object') ? f.config : {};
+  const slots = getPhotoSlotsForField(f);
+  const files = await openPhotoPicker({ multiple: replaceAt === null });
+  if(!files || files.length === 0) return;
+  try{
+    if(replaceAt !== null){
+      const pos = clampInt(replaceAt, 0, slots - 1);
+      const dataUrl = await fileToCompressedDataURL(files[0]);
+      f.images[pos] = dataUrl;
+    }else{
+      for(const file of files){
+        if(f.images.filter(Boolean).length >= slots) break;
+        const dataUrl = await fileToCompressedDataURL(file);
+        let putAt = f.images.findIndex(x => !x);
+        if(putAt === -1) putAt = f.images.length;
+        if(putAt >= slots) break;
+        f.images[putAt] = dataUrl;
       }
-
-      f.images = f.images.slice(0, slots);
-      while(f.images.length < slots) f.images.push('');
-
-      touchEdited();
-      loadLayoutFromData(item.data);
-    }catch(err){
-      alert('No se pudo procesar la imagen.');
     }
+    f.images = f.images.slice(0, slots);
+    while(f.images.length < slots) f.images.push('');
+    touchEdited();
+    loadLayoutFromData(item.data);
+  }catch(err){
+    alert('No se pudo procesar la imagen.');
   }
+}
 
-  function removePhotoFromField(idx, pos){
-    const item = getCurrentItem();
-    if(!item || !item.data) return;
-
-    const fields = Array.isArray(item.data.fields) ? item.data.fields : [];
-    const f = fields[idx];
-    if(!f) return;
-
-    f.images = Array.isArray(f.images) ? f.images : [];
-    const slots = getPhotoSlotsForField(f);
-
-    const p = clampInt(pos, 0, slots - 1);
-    if(p >= 0 && p < f.images.length){
-      f.images[p] = '';
-      f.images = f.images.slice(0, slots);
-      while(f.images.length < slots) f.images.push('');
-      touchEdited();
-      loadLayoutFromData(item.data);
-    }
+function removePhotoFromField(idx, pos){
+  const item = getCurrentItem();
+  if(!item || !item.data) return;
+  const fields = Array.isArray(item.data.fields) ? item.data.fields : [];
+  const f = fields[idx];
+  if(!f) return;
+  f.images = Array.isArray(f.images) ? f.images : [];
+  const slots = getPhotoSlotsForField(f);
+  const p = clampInt(pos, 0, slots - 1);
+  if(p >= 0 && p < f.images.length){
+    f.images[p] = '';
+    f.images = f.images.slice(0, slots);
+    while(f.images.length < slots) f.images.push('');
+    touchEdited();
+    loadLayoutFromData(item.data);
   }
+}
 
-  function renderEmptyDocument(){
-    lastEditedISO = nowISO();
-    updateLastEditedUI();
-    applyFixedLogo();
+function renderEmptyDocument(){
+  lastEditedISO = nowISO();
+  updateLastEditedUI();
+  applyFixedLogo();
+  document.getElementById('docTitle').textContent = '—';
+  document.getElementById('docSubtitle').textContent = 'Importa JSON y pulsa “LEER TAG”';
+  document.getElementById('fieldsMount').innerHTML = '';
+  updateStatus();
+}
 
-    document.getElementById('docTitle').textContent = '—';
-    document.getElementById('docSubtitle').textContent = 'Importa JSON y pulsa “LEER TAG”';
-
-    document.getElementById('fieldsMount').innerHTML = '';
-    updateStatus();
-  }
-
-  function fieldHTML(d, idx){
-    const type = normalize(d.type) || 'text';
-    const title = (d.title ?? '').toString();
-    const config = (d.config && typeof d.config==='object') ? d.config : {};
-
-    if(type === 'text'){
-      const v = (d.value ?? '').toString();
-      return `
-        <div class="field" data-type="text" data-idx="${idx}">
-          <div class="field-head">
-            <div class="title">${escapeHTML(title)}</div>
-          </div>
-          <div class="field-body textline">
-            <input type="text" value="${escapeAttr(v)}" oninput="onFieldChange(${idx})">
-          </div>
-        </div>
-      `;
-    }
-
-    if(type === 'radio'){
-      const options = Array.isArray(config.options) && config.options.length ? config.options : ["Bien","Mal","No dispone"];
-      const selected = (d.selected ?? '').toString();
-      const obs = (d.obs ?? '').toString();
-      const name = `r_${idx}`;
-      return `
-        <div class="field" data-type="radio" data-idx="${idx}">
-          <div class="field-head">
-            <div class="title">${escapeHTML(title)}</div>
-          </div>
-          <div class="field-body">
-            <div class="opts">
-              ${options.map(o=>{
-                const ck = (selected === o) ? 'checked' : '';
-                return `<label><input type="radio" name="${name}" value="${escapeAttr(o)}" ${ck} onchange="onFieldChange(${idx})"> ${escapeHTML(o)}</label>`;
-              }).join('')}
-            </div>
-            <textarea class="autogrow" placeholder="Observaciones" oninput="onFieldChange(${idx})">${escapeHTML(obs)}</textarea>
-          </div>
-        </div>
-      `;
-    }
-
-    if(type === 'photos'){
-      const imagesRaw = Array.isArray(d.images) ? d.images : [];
-      const slots = clampInt(config.slots ?? PHOTO_SLOTS_DEFAULT, 1, 12);
-
-      const images = imagesRaw.slice(0, slots);
-      while(images.length < slots) images.push('');
-
-      const hint = config.hint ? String(config.hint) : 'Pulsa “Añadir foto(s)” o “Cambiar” en una ranura para cargar una fotografía desde el dispositivo.';
-
-      return `
-        <div class="field" data-type="photos" data-idx="${idx}">
-          <div class="field-head">
-            <div class="title">${escapeHTML(title)}</div>
-          </div>
-          <div class="field-body">
-            <div class="photos-toolbar">
-              <button class="btn" type="button" onclick="addPhotosToField(${idx})">Añadir foto(s)</button>
-              <div class="photos-hint">${escapeHTML(hint)}</div>
-            </div>
-
-            <div class="photos" id="grid_${idx}">
-              ${images.map((src, pos)=>{
-                const has = !!normalize(src);
-                if(has){
-                  return `
-                    <div class="photo-slot">
-                      <img src="${escapeAttr(src)}" alt="Foto ${pos+1}">
-                      <div class="slot-actions">
-                        <button type="button" onclick="addPhotosToField(${idx}, { replaceAt: ${pos} })">Cambiar</button>
-                        <button type="button" onclick="removePhotoFromField(${idx}, ${pos})">Borrar</button>
-                      </div>
-                    </div>
-                  `;
-                }
-                return `
-                  <div class="photo-slot">
-                    <div class="ph">Sin foto<br>(ranura ${pos+1}/${slots})</div>
-                    <div class="slot-actions">
-                      <button type="button" onclick="addPhotosToField(${idx}, { replaceAt: ${pos} })">Añadir</button>
-                      <button type="button" onclick="removePhotoFromField(${idx}, ${pos})" disabled>Borrar</button>
-                    </div>
-                  </div>
-                `;
-              }).join('')}
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
+function fieldHTML(d, idx){
+  const type = normalize(d.type) || 'text';
+  const title = (d.title ?? '').toString();
+  const config = (d.config && typeof d.config==='object') ? d.config : {};
+  if(type === 'text'){
+    const v = (d.value ?? '').toString();
     return `
-      <div class="field" data-type="${escapeAttr(type)}" data-idx="${idx}">
-        <div class="field-head"><div class="title">${escapeHTML(title)}</div></div>
-        <div class="field-body">
-          <div style="font-size:12px;font-weight:900">Tipo no soportado: ${escapeHTML(type)}</div>
+      <div class="field" data-type="text" data-idx="${idx}">
+        <div class="field-head">
+          <div class="title">${escapeHTML(title)}</div>
+        </div>
+        <div class="field-body textline">
+          <input type="text" value="${escapeAttr(v)}" oninput="onFieldChange(${idx})">
         </div>
       </div>
     `;
   }
-
-  function loadLayoutFromData(data){
-    if(!data || typeof data !== 'object'){
-      alert('Datos inválidos.');
-      return;
-    }
-
-    if(data.theme){
-      setVar('--border', data.theme.border || '#000000');
-      setVar('--header-bg', data.theme.headerBg || '#ffffff');
-      setVar('--header-text', data.theme.headerText || '#000000');
-      setVar('--section-bg', data.theme.sectionBg || '#e6e6e6');
-      setVar('--section-text', data.theme.sectionText || '#000000');
-      setVar('--page-bg', data.theme.pageBg || '#ffffff');
-    }
-
-    const h = data.header && typeof data.header==='object' ? data.header : {};
-    const title = h.title || '';
-    const subtitle = h.subtitle || '';
-
-    lastEditedISO = h.lastEdited || nowISO();
-    updateLastEditedUI();
-    applyFixedLogo();
-
-    document.getElementById('docTitle').textContent = title;
-    document.getElementById('docSubtitle').textContent = subtitle;
-
-    const mount = document.getElementById('fieldsMount');
-    const fields = Array.isArray(data.fields) ? data.fields : [];
-
-    for(const f of fields){
-      if(f && normalize(f.type) === 'photos'){
-        f.config = (f.config && typeof f.config==='object') ? f.config : {};
-        const slots = getPhotoSlotsForField(f);
-        f.images = Array.isArray(f.images) ? f.images : [];
-        f.images = f.images.slice(0, slots);
-        while(f.images.length < slots) f.images.push('');
-      }
-    }
-
-    mount.innerHTML = fields.map((d,i)=>fieldHTML(d,i)).join('');
-
-    refreshAutoGrow();
-    updateStatus();
+  if(type === 'radio'){
+    const options = Array.isArray(config.options) && config.options.length ? config.options : ["Bien","Mal","No dispone"];
+    const selected = (d.selected ?? '').toString();
+    const obs = (d.obs ?? '').toString();
+    const name = `r_${idx}`;
+    return `
+      <div class="field" data-type="radio" data-idx="${idx}">
+        <div class="field-head">
+          <div class="title">${escapeHTML(title)}</div>
+        </div>
+        <div class="field-body">
+          <div class="opts">
+            ${options.map(o=>{
+              const ck = (selected === o) ? 'checked' : '';
+              return `<label><input type="radio" name="${name}" value="${escapeAttr(o)}" ${ck} onchange="onFieldChange(${idx})"> ${escapeHTML(o)}</label>`;
+            }).join('')}
+          </div>
+          <textarea class="autogrow" placeholder="Observaciones" oninput="onFieldChange(${idx})">${escapeHTML(obs)}</textarea>
+        </div>
+      </div>
+    `;
   }
+  if(type === 'photos'){
+    const imagesRaw = Array.isArray(d.images) ? d.images : [];
+    const slots = clampInt(config.slots ?? PHOTO_SLOTS_DEFAULT, 1, 12);
+    const images = imagesRaw.slice(0, slots);
+    while(images.length < slots) images.push('');
+    const hint = config.hint ? String(config.hint) : 'Pulsa “Añadir foto(s)” o “Cambiar” en una ranura para cargar una fotografía desde el dispositivo.';
+    return `
+      <div class="field" data-type="photos" data-idx="${idx}">
+        <div class="field-head">
+          <div class="title">${escapeHTML(title)}</div>
+        </div>
+        <div class="field-body">
+          <div class="photos-toolbar">
+            <button class="btn" type="button" onclick="addPhotosToField(${idx})">Añadir foto(s)</button>
+            <div class="photos-hint">${escapeHTML(hint)}</div>
+          </div>
+          <div class="photos" id="grid_${idx}">
+            ${images.map((src, pos)=>{
+              const has = !!normalize(src);
+              if(has){
+                return `
+                  <div class="photo-slot">
+                    <img src="${escapeAttr(src)}" alt="Foto ${pos+1}">
+                    <div class="slot-actions">
+                      <button type="button" onclick="addPhotosToField(${idx}, { replaceAt: ${pos} })">Cambiar</button>
+                      <button type="button" onclick="removePhotoFromField(${idx}, ${pos})">Borrar</button>
+                    </div>
+                  </div>
+                `;
+              }
+              return `
+                <div class="photo-slot">
+                  <div class="ph">Sin foto<br>(ranura ${pos+1}/${slots})</div>
+                  <div class="slot-actions">
+                    <button type="button" onclick="addPhotosToField(${idx}, { replaceAt: ${pos} })">Añadir</button>
+                    <button type="button" onclick="removePhotoFromField(${idx}, ${pos})" disabled>Borrar</button>
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+  return `
+    <div class="field" data-type="${escapeAttr(type)}" data-idx="${idx}">
+      <div class="field-head"><div class="title">${escapeHTML(title)}</div></div>
+      <div class="field-body">
+        <div style="font-size:12px;font-weight:900">Tipo no soportado: ${escapeHTML(type)}</div>
+      </div>
+    </div>
+  `;
+}
 
-  function onFieldChange(idx){
-    const item = getCurrentItem();
-    if(!item || !item.data) return;
-
-    const fields = Array.isArray(item.data.fields) ? item.data.fields : [];
-    const f = fields[idx];
-    if(!f) return;
-
-    const fieldEl = document.querySelector(`.field[data-idx="${idx}"]`);
-    if(!fieldEl) return;
-
-    const type = fieldEl.getAttribute('data-type');
-
-    if(type === 'text'){
-      const v = fieldEl.querySelector('input[type="text"]')?.value ?? '';
-      f.value = v;
-      touchEdited();
-    }
-
-    if(type === 'radio'){
-      const checked = fieldEl.querySelector('input[type="radio"]:checked');
-      f.selected = checked ? (checked.value || checked.parentElement.textContent.trim()) : '';
-      const obs = fieldEl.querySelector('textarea')?.value ?? '';
-      f.obs = obs;
+function loadLayoutFromData(data){
+  if(!data || typeof data !== 'object'){
+    alert('Datos inválidos.');
+    return;
+  }
+  if(data.theme){
+    setVar('--border', data.theme.border || '#000000');
+    setVar('--header-bg', data.theme.headerBg || '#ffffff');
+    setVar('--header-text', data.theme.headerText || '#000000');
+    setVar('--section-bg', data.theme.sectionBg || '#e6e6e6');
+    setVar('--section-text', data.theme.sectionText || '#000000');
+    setVar('--page-bg', data.theme.pageBg || '#ffffff');
+  }
+  const h = data.header && typeof data.header==='object' ? data.header : {};
+  const title = h.title || '';
+  const subtitle = h.subtitle || '';
+  lastEditedISO = h.lastEdited || nowISO();
+  updateLastEditedUI();
+  applyFixedLogo();
+  document.getElementById('docTitle').textContent = title;
+  document.getElementById('docSubtitle').textContent = subtitle;
+  const mount = document.getElementById('fieldsMount');
+  const fields = Array.isArray(data.fields) ? data.fields : [];
+  for(const f of fields){
+    if(f && normalize(f.type) === 'photos'){
       f.config = (f.config && typeof f.config==='object') ? f.config : {};
-      touchEdited();
+      const slots = getPhotoSlotsForField(f);
+      f.images = Array.isArray(f.images) ? f.images : [];
+      f.images = f.images.slice(0, slots);
+      while(f.images.length < slots) f.images.push('');
     }
   }
+  mount.innerHTML = fields.map((d,i)=>fieldHTML(d,i)).join('');
+  refreshAutoGrow();
+  updateStatus();
+}
 
-  // ✅ MODIFICADO: permite reset silencioso (para usar tras guardar)
-  function resetCurrentForm(opts = {}){
-    const item = getCurrentItem();
-    if(!item){
-      alert('No hay formulario abierto.');
-      return;
-    }
-
-    const silent = !!opts.silent;
-    if(!silent){
-      const ok = confirm('¿Reiniciar el formulario? Se perderán los cambios no guardados en esta sesión.');
-      if(!ok) return;
-    }
-
-    item.data = deepClone(item.baseData);
-    if(item.data && item.data.header) item.data.header.logo = FIXED_LOGO_URL;
-
-    lastEditedISO = nowISO();
-    if(item.data){
-      item.data.header = item.data.header || {};
-      item.data.header.lastEdited = lastEditedISO;
-    }
-    loadLayoutFromData(item.data);
-    saveState();
+function onFieldChange(idx){
+  const item = getCurrentItem();
+  if(!item || !item.data) return;
+  const fields = Array.isArray(item.data.fields) ? item.data.fields : [];
+  const f = fields[idx];
+  if(!f) return;
+  const fieldEl = document.querySelector(`.field[data-idx="${idx}"]`);
+  if(!fieldEl) return;
+  const type = fieldEl.getAttribute('data-type');
+  if(type === 'text'){
+    const v = fieldEl.querySelector('input[type="text"]')?.value ?? '';
+    f.value = v;
+    touchEdited();
   }
-
-  function isNFCSupported(){
-    return ('NDEFReader' in window);
+  if(type === 'radio'){
+    const checked = fieldEl.querySelector('input[type="radio"]:checked');
+    f.selected = checked ? (checked.value || checked.parentElement.textContent.trim()) : '';
+    const obs = fieldEl.querySelector('textarea')?.value ?? '';
+    f.obs = obs;
+    f.config = (f.config && typeof f.config==='object') ? f.config : {};
+    touchEdited();
   }
+}
 
-  async function startNFC(auto = false){
-    if(!isNFCSupported()){
-      nfcStatusText = 'No soportado en este navegador';
-      updateStatus();
-      return false;
-    }
-    if(nfcActive) return true;
+function resetCurrentForm(opts = {}){
+  const item = getCurrentItem();
+  if(!item){
+    alert('No hay formulario abierto.');
+    return;
+  }
+  const silent = !!opts.silent;
+  if(!silent){
+    const ok = confirm('¿Reiniciar el formulario? Se perderán los cambios no guardados en esta sesión.');
+    if(!ok) return;
+  }
+  item.data = deepClone(item.baseData);
+  if(item.data && item.data.header) item.data.header.logo = FIXED_LOGO_URL;
+  lastEditedISO = nowISO();
+  if(item.data){
+    item.data.header = item.data.header || {};
+    item.data.header.lastEdited = lastEditedISO;
+  }
+  loadLayoutFromData(item.data);
+}
 
-    try{
-      nfcReader = new NDEFReader();
-      await nfcReader.scan();
+function isNFCSupported(){
+  return ('NDEFReader' in window);
+}
 
-      nfcActive = true;
-      nfcEverStarted = true;
-      nfcStatusText = 'Escuchando… acerca un TAG';
-      updateStatus();
-
-      nfcReader.onreading = (event)=>{
-        const uid = event && event.serialNumber ? String(event.serialNumber) : '';
-        if(uid){
-          lastNFCTag = uid;
-          lastNFCTimeISO = nowISO();
-          nfcStatusText = `TAG leído: ${uid}`;
-        }else{
-          nfcStatusText = 'TAG leído (sin UID)';
-        }
-        saveState();
-        updateStatus();
-        if(pendingOpenFromNFC && uid){
-          pendingOpenFromNFC = false;
-          openByTag(uid);
-        }
-      };
-
-      nfcReader.onreadingerror = ()=>{
-        nfcStatusText = 'Error al leer TAG';
-        updateStatus();
-      };
-
-      return true;
-    }catch(err){
-      const name = err && err.name ? String(err.name) : '';
-      if(auto){
-        nfcStatusText = (name === 'NotAllowedError' || name === 'SecurityError')
-          ? 'Pulsa “LEER TAG” para activar NFC'
-          : 'No se pudo activar NFC';
+async function startNFC(auto = false){
+  if(!isNFCSupported()){
+    nfcStatusText = 'No soportado en este navegador';
+    updateStatus();
+    return false;
+  }
+  if(nfcActive) return true;
+  try{
+    nfcReader = new NDEFReader();
+    await nfcReader.scan();
+    nfcActive = true;
+    nfcEverStarted = true;
+    nfcStatusText = 'Escuchando… acerca un TAG';
+    updateStatus();
+    nfcReader.onreading = (event)=>{
+      const uid = event && event.serialNumber ? String(event.serialNumber) : '';
+      if(uid){
+        lastNFCTag = uid;
+        lastNFCTimeISO = nowISO();
+        nfcStatusText = `TAG leído: ${uid}`;
       }else{
-        nfcStatusText = (name === 'NotAllowedError' || name === 'SecurityError')
-          ? 'Permiso NFC denegado / requiere gesto'
-          : 'No se pudo activar NFC';
+        nfcStatusText = 'TAG leído (sin UID)';
       }
       updateStatus();
-      return false;
+      if(pendingOpenFromNFC && uid){
+        pendingOpenFromNFC = false;
+        openByTag(uid);
+      }
+    };
+    nfcReader.onreadingerror = ()=>{
+      nfcStatusText = 'Error al leer TAG';
+      updateStatus();
+    };
+    return true;
+  }catch(err){
+    const name = err && err.name ? String(err.name) : '';
+    if(auto){
+      nfcStatusText = (name === 'NotAllowedError' || name === 'SecurityError') ? 'Pulsa “LEER TAG” para activar NFC' : 'No se pudo activar NFC';
+    }else{
+      nfcStatusText = (name === 'NotAllowedError' || name === 'SecurityError') ? 'Permiso NFC denegado / requiere gesto' : 'No se pudo activar NFC';
     }
+    updateStatus();
+    return false;
   }
+}
 
-  function findTemplatesByTag(tag){
-    const t = normalize(tag);
-    if(!t) return [];
-    return db.filter(x =>
-      Array.isArray(x.tags) && x.tags.some(z => normalize(z).toLowerCase() === t.toLowerCase())
-    );
+function findTemplatesByTag(tag){
+  const t = normalize(tag);
+  if(!t) return [];
+  return db.filter(x => Array.isArray(x.tags) && x.tags.some(z => normalize(z).toLowerCase() === t.toLowerCase()));
+}
+
+function openTemplate(item){
+  if(!item || !item.data){
+    alert('Plantilla inválida.');
+    return;
   }
+  currentId = item.id;
+  loadLayoutFromData(item.data);
+}
 
-  function openTemplate(item){
-    if(!item || !item.data){
-      alert('Plantilla inválida.');
-      return;
-    }
-    currentId = item.id;
-    loadLayoutFromData(item.data);
-    saveState();
-  }
-
-  async function openByTag(tag){
-    const q = normalize(tag);
-    if(!q) return;
-
-    const openedTag = normalize(lastOpenedTag);
-    if(q && openedTag && q.toLowerCase() === openedTag.toLowerCase()){
-      return;
-    }
-
-    const matches = findTemplatesByTag(q);
-    if(matches.length === 0){
-      // Fallback: buscar en Firestore por código (TAG)
-      if(cloudReady()){
-        try{
-          const t = await cloudFindTemplateByCode(q);
-          if(t && t.data){
-            // añadir a memoria y reintentar
-            const layout = deepClone(t.data);
-            layout.header = (layout.header && typeof layout.header==='object') ? layout.header : {};
-            layout.theme = (layout.theme && typeof layout.theme==='object') ? layout.theme : {};
-            layout.fields = Array.isArray(layout.fields) ? layout.fields : [];
-            layout.header.logo = FIXED_LOGO_URL;
-
-            const tags = [];
-            const code = normalize(t.code || '');
-            if(code) tags.push(code);
-
-            const item = {
-              id: String(t.id),
-              category: normalize(t.category),
-              form: normalize(t.name),
-              tags,
-              baseData: deepClone(layout),
-              data: deepClone(layout)
-            };
-            db.push(item);
-            openTemplate(item);
-            lastOpenedTag = q;
-            saveState();
-            updateReadTagButtonText();
-            updateButtons();
-            updateStatus();
-            return;
+async function openByTag(tag){
+  const q = normalize(tag);
+  if(!q) return;
+  const openedTag = normalize(lastOpenedTag);
+  if(q && openedTag && q.toLowerCase() === openedTag.toLowerCase()) return;
+  const matches = findTemplatesByTag(q);
+  if(matches.length === 0){
+    if(cloudReady()){
+      try{
+        const t = await cloudFindTemplateByCode(q);
+        if(t && t.data){
+          const layout = deepClone(t.data);
+          layout.header = (layout.header && typeof layout.header==='object') ? layout.header : {};
+          layout.theme = (layout.theme && typeof layout.theme==='object') ? layout.theme : {};
+          layout.fields = Array.isArray(layout.fields) ? layout.fields : [];
+          layout.header.logo = FIXED_LOGO_URL;
+          for(const f of layout.fields){
+            if(f && normalize(f.type)==='photos'){
+              f.config = (f.config && typeof f.config==='object') ? f.config : {};
+              const slots = getPhotoSlotsForField(f);
+              f.images = Array.isArray(f.images) ? f.images : [];
+              f.images = f.images.slice(0, slots);
+              while(f.images.length < slots) f.images.push('');
+            }
           }
-        }catch(e){
-          console.error(e);
+          const tags = [];
+          const code = normalize(t.code || '');
+          if(code) tags.push(code);
+          const item = {
+            id: String(t.id),
+            category: normalize(t.category),
+            form: normalize(t.name),
+            tags,
+            baseData: deepClone(layout),
+            data: deepClone(layout)
+          };
+          db.push(item);
+          openTemplate(item);
+          lastOpenedTag = q;
+          updateReadTagButtonText();
+          updateButtons();
+          updateStatus();
+          return;
         }
+      }catch(e){
+        console.error(e);
       }
-
-      alert(`No se encontró ninguna plantilla con el TAG: ${q}`);
-      return;
     }
-
-    if(matches.length === 1){
-      openTemplate(matches[0]);
-      lastOpenedTag = q;
-      saveState();
-      updateReadTagButtonText();
-      return;
-    }
-
-    const list = matches
-      .map((m, i)=> `${i+1}) ${m.category} / ${m.form} (archivo: ${m.sourceFileName || '—'})`)
-      .join('\n');
-
-    const pick = prompt(
-      `Hay ${matches.length} formularios con el TAG "${q}".\n\nElige número:\n${list}\n\nEscribe 1-${matches.length}:`
-    );
-    if(pick === null) return;
-
-    const n = parseInt(String(pick).trim(), 10);
-    if(!Number.isFinite(n) || n < 1 || n > matches.length){
-      alert('Selección inválida.');
-      return;
-    }
-
-    openTemplate(matches[n-1]);
+    alert(`No se encontró ninguna plantilla con el TAG: ${q}`);
+    return;
+  }
+  if(matches.length === 1){
+    openTemplate(matches[0]);
     lastOpenedTag = q;
-    saveState();
     updateReadTagButtonText();
+    updateStatus();
+    return;
   }
+  const list = matches.map((m, i)=> `${i+1}) ${m.category} / ${m.form}`).join('\n');
+  const pick = prompt(`Hay ${matches.length} formularios con el TAG "${q}".\n\nElige número:\n${list}\n\nEscribe 1-${matches.length}:`);
+  if(pick === null) return;
+  const n = parseInt(String(pick).trim(), 10);
+  if(!Number.isFinite(n) || n < 1 || n > matches.length){
+    alert('Selección inválida.');
+    return;
+  }
+  openTemplate(matches[n-1]);
+  lastOpenedTag = q;
+  updateReadTagButtonText();
+  updateStatus();
+}
 
-  async function readTagAndOpen(){
-    if(db.length === 0){
-      alert('No hay plantillas en memoria. Se cargarán desde Firestore si es posible.');
-      // intento rápido de carga
-      await loadTemplatesFromCloud();
-      if(db.length===0) return;
+async function readTagAndOpen(){
+  if(db.length === 0){
+    alert('No hay plantillas en memoria. Se cargarán desde Firestore si es posible.');
+    await loadTemplatesFromCloud();
+    if(db.length===0) return;
+    updateStatus();
+    return;
+  }
+  let q = normalize(lastNFCTag);
+  const openedTag = normalize(lastOpenedTag);
+  if(q && openedTag && q.toLowerCase() === openedTag.toLowerCase()){
+    alert('Ya está abierto el formulario de este TAG. Acerca un TAG distinto y vuelve a pulsar “LEER TAG”.');
+    updateReadTagButtonText();
+    return;
+  }
+  if(!q){
+    pendingOpenFromNFC = true;
+    if(!nfcActive) startNFC(false);
+    if(isNFCSupported()){
+      nfcStatusText = 'Acerca un TAG NFC…';
+      updateStatus();
       return;
     }
-
-    let q = normalize(lastNFCTag);
-
-    const openedTag = normalize(lastOpenedTag);
-    if(q && openedTag && q.toLowerCase() === openedTag.toLowerCase()){
-      alert('Ya está abierto el formulario de este TAG. Acerca un TAG distinto y vuelve a pulsar “LEER TAG”.');
-      updateReadTagButtonText();
+  }
+  if(!q){
+    const tag = prompt('Introduce/pega el TAG leído:');
+    if(tag === null) return;
+    q = normalize(tag);
+    if(!q){
+      alert('TAG vacío.');
       return;
     }
-
-    if(!q){
-      pendingOpenFromNFC = true;
-      if(!nfcActive){
-        startNFC(false);
-      }
-      if(isNFCSupported()){
-        nfcStatusText = 'Acerca un TAG NFC…';
-        updateStatus();
-        return;
-      }
-    }
-
-    if(!q){
-      const tag = prompt('Introduce/pega el TAG leído:');
-      if(tag === null) return;
-      q = normalize(tag);
-      if(!q){
-        alert('TAG vacío.');
-        return;
-      }
-    }
-
-    await openByTag(q);
   }
+  await openByTag(q);
+}
 
-  function importJsonFiles(){
-    const inp = document.createElement('input');
-    inp.type = 'file';
-    inp.accept = 'application/json';
-    inp.multiple = true;
-
-    function normalizeTags(tagsRaw){
-      if(Array.isArray(tagsRaw)){
-        return tagsRaw.map(x=>normalize(x)).filter(Boolean);
-      }
-      if(typeof tagsRaw === 'string'){
-        return tagsRaw.split(',').map(x=>normalize(x)).filter(Boolean);
-      }
-      return [];
-    }
-
-    function isFormuExportV2(obj){
-      return !!(obj && typeof obj === 'object' && obj.format === 'formu_export_v2' && (obj.layout || obj.templates));
-    }
-
-    function extractLayout(raw){
-      if(!raw || typeof raw !== 'object') return null;
-      if(raw.header && Array.isArray(raw.fields)) return raw;
-      if(raw.data && typeof raw.data === 'object' && raw.data.header && Array.isArray(raw.data.fields)) return raw.data;
-      if(raw.layout && typeof raw.layout === 'object' && raw.layout.header && Array.isArray(raw.layout.fields)) return raw.layout;
-      return raw;
-    }
-
-    function normalizeImportedTemplate(raw, fallbackCategory='', fallbackForm=''){
-      if(!raw || typeof raw !== 'object') return null;
-
-      const layout = extractLayout(raw);
-      if(!layout || typeof layout !== 'object') return null;
-
+async function loadTemplatesFromCloud(){
+  if(!cloudReady()) return false;
+  try{
+    const templates = await cloudFetchAllTemplates();
+    db.length = 0;
+    for(const t of templates){
+      const layout = (t.data && typeof t.data === 'object') ? deepClone(t.data) : null;
+      if(!layout) continue;
       layout.header = (layout.header && typeof layout.header==='object') ? layout.header : {};
       layout.theme = (layout.theme && typeof layout.theme==='object') ? layout.theme : {};
       layout.fields = Array.isArray(layout.fields) ? layout.fields : [];
-
-      const rawMeta = (raw.meta && typeof raw.meta === 'object') ? raw.meta : {};
-      const layoutMeta = (layout.meta && typeof layout.meta === 'object') ? layout.meta : {};
-
-      const category = normalize(raw.category || rawMeta.category || layoutMeta.category || fallbackCategory || '');
-      const form = normalize(raw.name || raw.form || rawMeta.name || rawMeta.form || layoutMeta.name || layoutMeta.form || fallbackForm || '');
-
-      if(!category || !form) return null;
-
-      const tagsRaw = (rawMeta.tags ?? rawMeta.tag ?? raw.tags ?? raw.tag ?? layoutMeta.tags ?? layoutMeta.tag ?? []);
-      let tags = normalizeTags(tagsRaw);
-
-      const code = normalize(raw.code || rawMeta.code || layoutMeta.code || '');
-      if(code && !tags.some(t=>normalize(t).toLowerCase()===code.toLowerCase())) tags.unshift(code);
-
       layout.header.logo = FIXED_LOGO_URL;
-
       for(const f of layout.fields){
         if(f && normalize(f.type)==='photos'){
           f.config = (f.config && typeof f.config==='object') ? f.config : {};
@@ -1767,166 +1406,71 @@ window.addEventListener('unhandledrejection', (e)=>__showGlobalErr('Promesa rech
           while(f.images.length < slots) f.images.push('');
         }
       }
-
-      layout.meta = Object.assign({}, layoutMeta, rawMeta, {
-        category,
-        name: form,
-        tags
+      const tags = [];
+      const code = normalize(t.code || '');
+      if(code) tags.push(code);
+      db.push({
+        id: String(t.id),
+        category: normalize(t.category),
+        form: normalize(t.name),
+        tags,
+        baseData: deepClone(layout),
+        data: deepClone(layout)
       });
-      if(code) layout.meta.code = code;
-
-      return { category, form, tags, data: layout };
     }
+    updateStatus();
+    return true;
+  }catch(e){
+    console.error(e);
+    return false;
+  }
+}
 
-    inp.onchange = async ()=>{
-      const files = [...(inp.files || [])];
-      if(files.length === 0) return;
+function importJsonFiles(){
+  alert('Modo nube: las plantillas se cargan automáticamente desde Firestore.\n\nUsa "Administrador" para crear/guardar plantillas.');
+}
 
-      for(const file of files){
-        const text = await file.text();
-        const parsed = safeJSONParse(text);
+function clearLoaded(){
+  const ok = confirm('Esto vacía la lista de plantillas en memoria (no borra nada de Firestore). ¿Continuar?');
+  if(!ok) return;
+  db.length = 0;
+  currentId = null;
+  lastOpenedTag = '';
+  lastNFCTag = '';
+  lastNFCTimeISO = null;
+  inspections.length = 0;
+  renderEmptyDocument();
+}
 
-        if(!parsed || typeof parsed !== 'object'){
-          alert(`JSON inválido: ${file.name}`);
-          continue;
-        }
-
-        let rawTemplates = [];
-
-        if(isFormuExportV2(parsed)){
-          if(Array.isArray(parsed.templates) && parsed.templates.length){
-            rawTemplates = parsed.templates.slice();
-          }else if(parsed.layout && typeof parsed.layout === 'object'){
-            rawTemplates = [{
-              category: '(Importado)',
-              name: '(layout)',
-              code: '',
-              data: parsed.layout
-            }];
-          }
-        }else{
-          rawTemplates = Array.isArray(parsed.templates) ? parsed.templates : [parsed];
-        }
-
-        for(const rt of rawTemplates){
-          const norm = normalizeImportedTemplate(rt, '', '');
-          if(!norm){
-            alert(`Falta categoría o nombre de formulario en: ${file.name}\n\nSe omite esta plantilla.`);
-            continue;
-          }
-
-          const { category, form, tags, data } = norm;
-
-          const existing = db.find(x => normalize(x.category).toLowerCase()===normalize(category).toLowerCase()
-                                     && normalize(x.form).toLowerCase()===normalize(form).toLowerCase());
-          if(existing){
-            const ok = confirm(`Ya existe en memoria:\n${category} / ${form}\n\n¿Sobrescribir con ${file.name}?`);
-            if(!ok) continue;
-            existing.baseData = deepClone(data);
-            existing.data = deepClone(data);
-            existing.tags = tags;
-            existing.sourceFileName = file.name;
-          }else{
-            db.push({
-              id: makeId(),
-              category,
-              form,
-              tags,
-              sourceFileName: file.name,
-              baseData: deepClone(data),
-              data: deepClone(data)
-            });
-          }
-        }
-      }
-
-      saveState();
+(function init(){
+  initFirebase();
+  lastEditedISO = lastEditedISO || nowISO();
+  updateLastEditedUI();
+  applyFixedLogo();
+  loadInspections().then(()=>updateStatus()).catch(()=>updateStatus());
+  loadTemplatesFromCloud().then(()=>{
+    if(!currentId && db.length){
       updateStatus();
-
-      if(db.length === 1){
-        openTemplate(db[0]);
-      }else{
-        const item = getCurrentItem();
-        if(item && item.data) loadLayoutFromData(item.data);
-      }
-    };
-
-    inp.click();
-  }
-
-  function clearLoaded(){
-    const ok = confirm('Esto vacía la lista de plantillas importadas (no borra archivos del disco). ¿Continuar?');
-    if(!ok) return;
-    db.length = 0;
-    currentId = null;
-    lastOpenedTag = '';
-    lastNFCTag = '';
-    lastNFCTimeISO = null;
-    safeLSRemove(STORAGE_KEY);
-    safeLSRemove(INSPECTIONS_KEY);
-    inspections.length = 0;
-    renderEmptyDocument();
-    saveState();
-  }
-
-  (function init(){
-    initFirebase();
-    const restored = loadState();
-    // cargar inspecciones desde la nube (no bloquea la UI)
-    loadInspections();
-
-    lastEditedISO = lastEditedISO || nowISO();
-    updateLastEditedUI();
-    applyFixedLogo();
-
-    // Cargar plantillas desde Firestore (fuente de verdad)
-    loadTemplatesFromCloud().then(()=>{
-      if(!currentId && db.length){
-        // no abre automáticamente; solo habilita acciones
-        updateStatus();
-        updateButtons();
-      }
-    });
-
-    if(restored && db.length > 0){
-      const item = getCurrentItem();
-      if(item && item.data){
-        loadLayoutFromData(item.data);
-      }else{
-        currentId = null;
-        renderEmptyDocument();
-      }
-    }else{
-      renderEmptyDocument();
+      updateButtons();
     }
+  });
+  renderEmptyDocument();
+  startNFC(true);
+  document.addEventListener('visibilitychange', ()=>{
+    if(document.visibilityState === 'visible') startNFC(true);
+  });
+  window.addEventListener('focus', ()=> startNFC(true));
+  const oneTap = ()=>{
+    document.removeEventListener('pointerdown', oneTap, true);
+    if(!nfcActive) startNFC(false);
+  };
+  document.addEventListener('pointerdown', oneTap, true);
+})();
 
-    startNFC(true);
-
-    document.addEventListener('visibilitychange', ()=>{
-      if(document.visibilityState === 'visible') startNFC(true);
-    });
-    window.addEventListener('focus', ()=> startNFC(true));
-
-    const oneTap = ()=>{
-      document.removeEventListener('pointerdown', oneTap, true);
-      if(!nfcActive) startNFC(false);
-    };
-    document.addEventListener('pointerdown', oneTap, true);
-
-    saveState();
-  })();
-
-// --- Bindings explícitos para botones inline (robustez) ---
 try{
   window.importJsonFiles = importJsonFiles;
   window.exportPDF = exportPDF;
   window.exportAllInspectionsForDB = exportAllInspectionsForDB;
-  
-  // Override: en modo nube, no se importan plantillas por JSON local desde Inspector
-  window.importJsonFiles = function(){
-    alert('Modo nube: las plantillas se cargan automáticamente desde Firestore.\n\nUsa "Administrador" para crear/guardar plantillas.');
-  };
-
   window.exportCloudInfoBBDD = exportCloudInfoBBDD;
   window.saveCurrentInspection = saveCurrentInspection;
   window.resetCurrentForm = resetCurrentForm;
@@ -1935,7 +1479,6 @@ try{
   window.addPhotosToField = addPhotosToField;
   window.removePhotoFromField = removePhotoFromField;
 }catch(e){ console.error(e); }
-
 </script>
 
 </body>

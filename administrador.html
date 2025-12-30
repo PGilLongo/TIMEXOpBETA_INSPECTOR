@@ -9,17 +9,12 @@
   :root{
     --page-bg:#ffffff;
     --ui-bg:#c0c0c0;
-
     --border:#000000;
     --header-bg:#ffffff;
     --header-text:#000000;
-
     --section-bg:#e6e6e6;
     --section-text:#000000;
-
     --body-text:#000000;
-
-    /* Windows 95 HUD tokens */
     --w95-bg:#c0c0c0;
     --w95-light:#ffffff;
     --w95-dark:#808080;
@@ -37,7 +32,6 @@
     color: var(--body-text);
   }
 
-  /* ===== Windows 95 HUD (TOPBAR) ===== */
   .topbar{
     position:sticky; top:0; z-index:20;
     background: var(--w95-bg);
@@ -67,7 +61,6 @@
     flex-wrap:wrap;
     align-items:center;
     justify-content:space-between;
-
     background: var(--w95-bg);
     padding:8px;
     border-top:2px solid var(--w95-light);
@@ -77,15 +70,20 @@
   }
   .group{display:flex; gap:8px; flex-wrap:wrap; align-items:center}
 
-  /* IMPORTANT: HUD controls only (no tocar campos del formulario) */
   .topbar button,
   .topbar select,
   .topbar input[type="color"],
   .topbar input[type="text"],
+  .topbar input[type="number"],
+  .topbar input[type="date"],
+  .topbar input[type="datetime-local"],
   .panel button,
   .panel select,
   .panel input[type="color"],
-  .panel input[type="text"]{
+  .panel input[type="text"],
+  .panel input[type="number"],
+  .panel input[type="date"],
+  .panel input[type="datetime-local"]{
     border-top:2px solid var(--w95-light);
     border-left:2px solid var(--w95-light);
     border-right:2px solid var(--w95-shadow);
@@ -96,6 +94,7 @@
     cursor:pointer;
     font-size:12px;
     font-family: inherit;
+    max-width:100%;
   }
   .topbar button:active,
   .panel button:active{
@@ -122,7 +121,6 @@
     cursor:not-allowed;
   }
 
-  /* Workspace */
   .workspace{
     max-width:1200px;
     margin:12px auto;
@@ -132,7 +130,6 @@
     padding:0 10px 20px;
   }
 
-  /* Left HUD panel (Windows 95 window body) */
   .panel{
     background: var(--w95-bg);
     border-top:2px solid var(--w95-light);
@@ -140,6 +137,7 @@
     border-right:2px solid var(--w95-shadow);
     border-bottom:2px solid var(--w95-shadow);
     padding:10px;
+    min-width:0;
   }
   .panel h3{
     margin:0 0 8px 0;
@@ -164,7 +162,10 @@
     display:block;
     margin-bottom:6px;
   }
-  .panel input[type="text"]{
+  .panel input[type="text"],
+  .panel input[type="number"],
+  .panel input[type="date"],
+  .panel input[type="datetime-local"]{
     width:100%;
     box-sizing:border-box;
     font-weight:700;
@@ -181,7 +182,6 @@
     box-shadow: inset 1px 1px 0 #fff;
   }
 
-  /* group boxes */
   .tplbox,
   .tagbox{
     border-top:2px solid var(--w95-shadow);
@@ -218,6 +218,7 @@
     font-size:11px;
     color:#000;
     line-height:1.35;
+    word-break:break-word;
   }
   .tplactions,
   .tagactions{
@@ -227,22 +228,21 @@
     margin-top:10px;
   }
 
-  /* A4 page (visual) */
   .page{
     width:210mm;
     min-height:297mm;
     margin:0 auto 14px auto;
     background: var(--page-bg);
-    padding:10mm;
+    padding:min(10mm, 4vw);
     border-top:2px solid var(--w95-light);
     border-left:2px solid var(--w95-light);
     border-right:2px solid var(--w95-shadow);
     border-bottom:2px solid var(--w95-shadow);
     box-shadow: inset 1px 1px 0 #fff, 0 6px 18px rgba(0,0,0,.12);
     box-sizing:border-box;
+    max-width:100%;
   }
 
-  /* export mode */
   body.exporting{
     background:#fff !important;
   }
@@ -250,14 +250,15 @@
     margin:0 !important;
     box-shadow:none !important;
     border:none !important;
+    width:210mm !important;
+    min-height:297mm !important;
+    padding:10mm !important;
+    max-width:none !important;
   }
   body.exporting .actions{
     display:none !important;
   }
 
-  /* ===== FORMULARIOS (NO TOCAR) ===== */
-
-  /* Header (editable) */
   .doc-header{
     border:2px solid var(--border);
     background: var(--header-bg);
@@ -269,6 +270,7 @@
     align-items:center;
     break-inside:avoid;
     page-break-inside:avoid;
+    flex-wrap:wrap;
   }
   .logo{
     width:190px;
@@ -280,6 +282,7 @@
     justify-content:center;
     overflow:hidden;
     flex: 0 0 auto;
+    max-width:100%;
   }
   .logo img{
     width:100%;
@@ -288,7 +291,7 @@
     display:block;
   }
   .header-text{
-    flex:1 1 auto;
+    flex:1 1 280px;
     min-width:0;
   }
   .header-title{
@@ -307,20 +310,20 @@
   }
 
   .header-meta{
-    flex: 0 0 auto;
+    flex: 0 1 190px;
     text-align:right;
-    min-width:190px;
+    min-width:160px;
     font-size:11px;
     font-weight:900;
     line-height:1.2;
     word-break:break-word;
+    margin-left:auto;
   }
   .header-meta .muted{
     opacity:.85;
     font-weight:800;
   }
 
-  /* Fields */
   .field{
     border:2px solid var(--border);
     margin-bottom:12px;
@@ -337,6 +340,7 @@
     background: var(--section-bg);
     color: var(--section-text);
     border-bottom:2px solid var(--border);
+    flex-wrap:wrap;
   }
   .title{
     font-weight:900;
@@ -362,7 +366,6 @@
 
   .field-body{ padding:8px; }
 
-  /* Input styles */
   .textline input[type="text"]{
     width:100%;
     border:2px solid var(--border);
@@ -391,40 +394,47 @@
   .opts{
     display:flex;
     flex-wrap:wrap;
-    gap:20px;
+    gap:14px;
     margin-bottom:8px;
     font-size:16px;
     color: var(--body-text);
   }
   .opts label{ white-space:nowrap; }
 
-  /* Photos */
   .photos{
     display:grid;
-    grid-template-columns:repeat(4, 160px);
+    grid-template-columns:repeat(auto-fit, minmax(120px, 1fr));
     gap:10px;
     margin-top:10px;
   }
   .photos img{
-    width:160px;
-    height:200px;
+    width:100%;
+    height:auto;
+    aspect-ratio:4/5;
     object-fit:contain;
     border:2px solid var(--border);
     background:#fff;
     display:block;
   }
 
-  /* Print */
   @media print{
     .topbar,.panel{display:none !important;}
     .workspace{display:block; padding:0;}
-    .page{margin:0; border:none; box-shadow:none;}
+    .page{margin:0; border:none; box-shadow:none; width:210mm; min-height:297mm; padding:10mm; max-width:none;}
     body{background:#fff;}
     .actions{display:none !important;}
   }
 
   @media (max-width:1080px){
     .workspace{grid-template-columns:1fr;}
+  }
+  @media (max-width:640px){
+    .topbar .row{justify-content:flex-start}
+    .panel .row{grid-template-columns:1fr}
+    .tplrow,.tagrow{grid-template-columns:1fr}
+    .logo{width:min(190px, 42vw); height:auto; aspect-ratio:19/14}
+    .header-meta{min-width:0; text-align:left; margin-left:0}
+    .opts{font-size:15px}
   }
 </style>
 </head>
@@ -477,6 +487,38 @@
       </div>
 
       <div class="tplmeta" id="tplMeta"></div>
+    </div>
+
+    <div class="tplbox">
+      <h3>Alertas periódicas</h3>
+
+      <div class="tplrow">
+        <div class="full">
+          <label style="display:flex;gap:10px;align-items:center;margin:0">
+            <input id="alertEnabled" type="checkbox" />
+            Activar alertas para este formulario
+          </label>
+        </div>
+
+        <div>
+          <label>Periodicidad (días)</label>
+          <input id="alertEveryDays" type="number" min="1" step="1" value="15" />
+        </div>
+
+        <div>
+          <label>Inicio / referencia</label>
+          <input id="alertStartAt" type="datetime-local" value="" />
+        </div>
+
+        <div class="full">
+          <div class="tplmeta" id="alertMeta"></div>
+        </div>
+      </div>
+
+      <div class="note" style="margin-top:10px">
+        Si está activado, el <b>index</b> mostrará una alerta cuando el formulario esté <b>vencido</b> según la periodicidad.
+        Puedes marcarla como realizada desde el visor de alertas.
+      </div>
     </div>
 
     <div class="tagbox">
@@ -543,8 +585,6 @@
 
   <div>
     <div id="capture" class="page">
-
-      <!-- Cabecera editable -->
       <div id="docHeader" class="doc-header">
         <div class="logo" id="logoBox"></div>
         <div class="header-text">
@@ -557,7 +597,6 @@
         </div>
       </div>
 
-      <!-- Campos iniciales -->
       <div class="field" data-type="text" data-title="TEXTO">
         <div class="field-head">
           <div class="title" ondblclick="editTitle(this)">TEXTO</div>
@@ -609,16 +648,12 @@
   </div>
 </div>
 
-<!-- libs -->
 <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
-
-<!-- Firebase (Cloud Firestore) - compat (global firebase.*) -->
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
 
 <script>
-/* __GLOBAL_ERROR_WIRED__ */
 let __shownGlobalErr = false;
 function __showGlobalErr(prefix, err){
   try{
@@ -631,965 +666,1354 @@ function __showGlobalErr(prefix, err){
 window.addEventListener('error', (e)=>__showGlobalErr('Error JS', e.error || e.message));
 window.addEventListener('unhandledrejection', (e)=>__showGlobalErr('Promesa rechazada', e.reason));
 
-  /* ===== Firebase (NO localStorage) =====
-     Guarda lo necesario en Cloud Firestore para no depender de exportar/importar en local. */
-  const firebaseConfig = {
-    apiKey: "AIzaSyBLP0yGc_Yh0nKGNYbPcYabTg25LDw2wco",
-    authDomain: "inspector-b4f41.firebaseapp.com",
-    projectId: "inspector-b4f41",
-    storageBucket: "inspector-b4f41.firebasestorage.app",
-    messagingSenderId: "333394046622",
-    appId: "1:333394046622:web:caa18c6f1d341b0a97158f"
-  };
+const firebaseConfig = {
+  apiKey: "AIzaSyBLP0yGc_Yh0nKGNYbPcYabTg25LDw2wco",
+  authDomain: "inspector-b4f41.firebaseapp.com",
+  projectId: "inspector-b4f41",
+  storageBucket: "inspector-b4f41.firebasestorage.app",
+  messagingSenderId: "333394046622",
+  appId: "1:333394046622:web:caa18c6f1d341b0a97158f"
+};
 
-  let firebaseApp = null;
-  let db = null;
+let firebaseApp = null;
+let db = null;
 
-  const TPL_COLLECTION = 'templates_v1';
+const TPL_COLLECTION = 'templates_v1';
 
-  function initFirebase(){
-    try{
-      if(!window.firebase){
-        console.warn('Firebase SDK no cargado.');
-        return false;
-      }
+function fsErrShort(e){
+  try{
+    const code = e && (e.code || e.name) ? String(e.code || e.name) : '';
+    const msg = e && e.message ? String(e.message) : String(e||'');
+    const out = (code && msg) ? (code + ' — ' + msg) : (code || msg);
+    return out.trim() || 'error';
+  }catch(_){ return 'error'; }
+}
 
-
-/* __FS_HELPERS_GLOBAL__ */
-
-  // ===== Helpers Firestore (errores) =====
-  function fsErrShort(e){
-    try{
-      const code = e && (e.code || e.name) ? String(e.code || e.name) : '';
-      const msg = e && e.message ? String(e.message) : String(e||'');
-      const out = (code && msg) ? (code + ' — ' + msg) : (code || msg);
-      return out.trim() || 'error';
-    }catch(_){ return 'error'; }
+function fsRulesHint(e){
+  const s = (e && (e.code || '') ? String(e.code) : '') + ' ' + (e && e.message ? String(e.message) : '');
+  if(/permission-denied/i.test(s)){
+    return "\n\nParece un problema de REGLAS: si no usas login, Firestore debe permitir lecturas/escrituras públicas (o habilitar Auth).";
   }
-  function fsRulesHint(e){
-    const s = (e && (e.code || '') ? String(e.code) : '') + ' ' + (e && e.message ? String(e.message) : '');
-    if(/permission-denied/i.test(s)){
-      return "\n\nPermisos Firestore: abre Rules temporalmente o añade Auth (sin login, por defecto bloquea).";
-    }
-    if(/failed-precondition/i.test(s) && /index/i.test(s)){
-      return "\n\nFalta un índice compuesto (Firestore -> Indexes).";
-    }
-    if(/unavailable|network|offline|fetch/i.test(s)){
-      return "\n\nProblema de red/bloqueo del navegador.";
-    }
-    return "";
+  if(/failed-precondition/i.test(s) && /index/i.test(s)){
+    return "\n\nParece faltar un índice compuesto en Firestore (consola -> Firestore -> Indexes).";
   }
+  if(/unavailable|network|offline|fetch/i.test(s)){
+    return "\n\nParece un problema de conexión/red o bloqueo del navegador.";
+  }
+  return "";
+}
 
-  function fsErrShort(e){
-    try{
-      const code = e && (e.code || e.name) ? String(e.code || e.name) : '';
-      const msg = e && e.message ? String(e.message) : String(e||'');
-      const out = (code && msg) ? (code + ' — ' + msg) : (code || msg);
-      return out.trim() || 'error';
-    }catch(_){ return 'error'; }
-  }
-  function fsRulesHint(e){
-    const s = (e && (e.code || '') ? String(e.code) : '') + ' ' + (e && e.message ? String(e.message) : '');
-    if(/permission-denied/i.test(s)){
-      return "\n\nParece un problema de REGLAS: si no usas login, Firestore debe permitir lecturas/escrituras públicas (o habilitar Auth).";
-    }
-    if(/failed-precondition/i.test(s) && /index/i.test(s)){
-      return "\n\nParece faltar un índice compuesto en Firestore (consola -> Firestore -> Indexes).";
-    }
-    if(/unavailable|network|offline|fetch/i.test(s)){
-      return "\n\nParece un problema de conexión/red o bloqueo del navegador.";
-    }
-    return "";
-  }
-
-      firebaseApp = firebase.initializeApp(firebaseConfig);
-      db = firebase.firestore();
-      return true;
-    }catch(e){
-      console.error(e);
+function initFirebase(){
+  try{
+    if(!window.firebase){
+      console.warn('Firebase SDK no cargado.');
       return false;
     }
+    firebaseApp = firebase.initializeApp(firebaseConfig);
+    db = firebase.firestore();
+    return true;
+  }catch(e){
+    console.error(e);
+    return false;
   }
+}
 
-  function cloudReady(){
-    return !!db;
-  }
+function cloudReady(){
+  return !!db;
+}
 
-  async function cloudPing(){
-    if(!cloudReady()) throw new Error('Firestore no está inicializado.');
-    // lectura ligera para comprobar conectividad
-    try{
-      await db.collection(TPL_COLLECTION).limit(1).get();
-    }catch(e){
-      throw e;
-    }
-  }
+async function cloudPing(){
+  if(!cloudReady()) throw new Error('Firestore no está inicializado.');
+  await db.collection(TPL_COLLECTION).limit(1).get();
+}
 
-  async function cloudFetchAllTemplates(){
-    if(!cloudReady()) return [];
-    const snap = await db.collection(TPL_COLLECTION).get();
-    const arr = [];
-    snap.forEach(doc=>{
-      const data = doc.data() || {};
-      arr.push({
-        id: doc.id,
-        name: String(data.name || ''),
-        category: String(data.category || ''),
-        code: String(data.code || ''),
-        createdAt: data.createdAt ? String(data.createdAt) : '',
-        updatedAt: data.updatedAt ? String(data.updatedAt) : '',
-        data: (data.data && typeof data.data === 'object') ? data.data : null
-      });
-    });
-    return arr.filter(t => t.id && t.name && t.category && t.data);
-  }
-
-  async function cloudUpsertTemplate(tpl){
-    if(!cloudReady()) throw new Error('Firestore no está inicializado.');
-    if(!tpl || !tpl.id) throw new Error('Plantilla inválida.');
-    const payload = {
-      name: String(tpl.name || ''),
-      category: String(tpl.category || ''),
-      code: String(tpl.code || ''),
-      createdAt: tpl.createdAt ? String(tpl.createdAt) : nowISO(),
-      updatedAt: tpl.updatedAt ? String(tpl.updatedAt) : nowISO(),
-      data: (tpl.data && typeof tpl.data === 'object') ? tpl.data : null
-    };
-    await db.collection(TPL_COLLECTION).doc(String(tpl.id)).set(payload, { merge:true });
-  }
-
-  async function cloudDeleteTemplate(id){
-    if(!cloudReady()) throw new Error('Firestore no está inicializado.');
-    if(!id) return;
-    await db.collection(TPL_COLLECTION).doc(String(id)).delete();
-  }
-
-  async function cloudDeleteAllTemplates(){
-    if(!cloudReady()) throw new Error('Firestore no está inicializado.');
-    const snap = await db.collection(TPL_COLLECTION).get();
-    const batch = db.batch();
-    let count = 0;
-    snap.forEach(doc=>{
-      batch.delete(doc.ref);
-      count++;
-    });
-    if(count) await batch.commit();
-  }
-
-  async function cloudFindByCode(code){
-    if(!cloudReady()) return null;
-    const c = normalizeCode(code);
-    if(!c) return null;
-    const qs = await db.collection(TPL_COLLECTION).where('code','==',c).limit(1).get();
-    if(qs.empty) return null;
-    const d = qs.docs[0];
-    const data = d.data() || {};
-    return {
-      id: d.id,
+async function cloudFetchAllTemplates(){
+  if(!cloudReady()) return [];
+  const snap = await db.collection(TPL_COLLECTION).get();
+  const arr = [];
+  snap.forEach(doc=>{
+    const data = doc.data() || {};
+    arr.push({
+      id: doc.id,
       name: String(data.name || ''),
       category: String(data.category || ''),
       code: String(data.code || ''),
       createdAt: data.createdAt ? String(data.createdAt) : '',
       updatedAt: data.updatedAt ? String(data.updatedAt) : '',
+      alertEnabled: !!data.alertEnabled,
+      alertEveryDays: Number(data.alertEveryDays || 0),
+      alertStartAt: data.alertStartAt ? String(data.alertStartAt) : (data.createdAt ? String(data.createdAt) : ''),
       data: (data.data && typeof data.data === 'object') ? data.data : null
-    };
-  }
+    });
+  });
+  return arr.filter(t => t.id && t.name && t.category && t.data);
+}
 
-  /* ===== LOGO FIJO (SIEMPRE ESTE) ===== */
-  const FIXED_LOGO_URL = 'https://i.ibb.co/BK6jvxPG/image.png';
-
-  let lastEditedISO = null;
-
-  /* ===== EXPORT VERSION (JSON incluye plantillas + estado UI) ===== */
-  const EXPORT_FORMAT = 'formu_export_v2';
-
-  /* ===== RESET COMPLETO (estado inicial) ===== */
-  const DEFAULTS = {
-    hdrTitle: 'INSPECCIÓN ESPECTÁCULOS – BOMBEROS',
-    hdrSubtitle: 'Informe editable con exportación PDF A4 (sin cortes de campos)',
-    theme: {
-      border: '#000000',
-      headerBg: '#ffffff',
-      headerText: '#000000',
-      sectionBg: '#e6e6e6',
-      sectionText: '#000000',
-      pageBg: '#ffffff'
-    }
+async function cloudUpsertTemplate(tpl){
+  if(!cloudReady()) throw new Error('Firestore no está inicializado.');
+  if(!tpl || !tpl.id) throw new Error('Plantilla inválida.');
+  const payload = {
+    name: String(tpl.name || ''),
+    category: String(tpl.category || ''),
+    code: String(tpl.code || ''),
+    createdAt: tpl.createdAt ? String(tpl.createdAt) : nowISO(),
+    updatedAt: tpl.updatedAt ? String(tpl.updatedAt) : nowISO(),
+    alertEnabled: !!tpl.alertEnabled,
+    alertEveryDays: Number(tpl.alertEveryDays || 0),
+    alertStartAt: tpl.alertStartAt ? String(tpl.alertStartAt) : (tpl.createdAt ? String(tpl.createdAt) : nowISO()),
+    data: (tpl.data && typeof tpl.data === 'object') ? tpl.data : null
   };
+  await db.collection(TPL_COLLECTION).doc(String(tpl.id)).set(payload, { merge:true });
+}
 
-  let INITIAL_CAPTURE_HTML = null;
-  let INITIAL_RADIO_COUNTER = 1;
+async function cloudDeleteTemplate(id){
+  if(!cloudReady()) throw new Error('Firestore no está inicializado.');
+  if(!id) return;
+  await db.collection(TPL_COLLECTION).doc(String(id)).delete();
+}
 
-  function snapshotInitialState(){
-    if(INITIAL_CAPTURE_HTML !== null) return;
-    const cap = document.getElementById('capture');
-    if(!cap) return;
-    INITIAL_CAPTURE_HTML = cap.innerHTML;
-    INITIAL_RADIO_COUNTER = radioCounter;
+async function cloudDeleteAllTemplates(){
+  if(!cloudReady()) throw new Error('Firestore no está inicializado.');
+  const snap = await db.collection(TPL_COLLECTION).get();
+  const batch = db.batch();
+  let count = 0;
+  snap.forEach(doc=>{
+    batch.delete(doc.ref);
+    count++;
+  });
+  if(count) await batch.commit();
+}
+
+async function cloudFindByCode(code){
+  if(!cloudReady()) return null;
+  const c = normalizeCode(code);
+  if(!c) return null;
+  const qs = await db.collection(TPL_COLLECTION).where('code','==',c).limit(1).get();
+  if(qs.empty) return null;
+  const d = qs.docs[0];
+  const data = d.data() || {};
+  return {
+    id: d.id,
+    name: String(data.name || ''),
+    category: String(data.category || ''),
+    code: String(data.code || ''),
+    createdAt: data.createdAt ? String(data.createdAt) : '',
+    updatedAt: data.updatedAt ? String(data.updatedAt) : '',
+    alertEnabled: !!data.alertEnabled,
+    alertEveryDays: Number(data.alertEveryDays || 0),
+    alertStartAt: data.alertStartAt ? String(data.alertStartAt) : (data.createdAt ? String(data.createdAt) : ''),
+    data: (data.data && typeof data.data === 'object') ? data.data : null
+  };
+}
+
+const FIXED_LOGO_URL = 'https://i.ibb.co/BK6jvxPG/image.png';
+
+let lastEditedISO = null;
+const EXPORT_FORMAT = 'formu_export_v2';
+
+const DEFAULTS = {
+  hdrTitle: 'INSPECCIÓN ESPECTÁCULOS – BOMBEROS',
+  hdrSubtitle: 'Informe editable con exportación PDF A4 (sin cortes de campos)',
+  theme: {
+    border: '#000000',
+    headerBg: '#ffffff',
+    headerText: '#000000',
+    sectionBg: '#e6e6e6',
+    sectionText: '#000000',
+    pageBg: '#ffffff'
   }
+};
 
-  function fmtLastEdited(iso){
+let INITIAL_CAPTURE_HTML = null;
+let INITIAL_RADIO_COUNTER = 1;
+
+function snapshotInitialState(){
+  if(INITIAL_CAPTURE_HTML !== null) return;
+  const cap = document.getElementById('capture');
+  if(!cap) return;
+  INITIAL_CAPTURE_HTML = cap.innerHTML;
+  INITIAL_RADIO_COUNTER = radioCounter;
+}
+
+function fmtLastEdited(iso){
+  if(!iso) return '—';
+  try{ return new Date(iso).toLocaleString('es-ES'); }catch(_){ return String(iso); }
+}
+function updateLastEditedUI(){
+  const el = document.getElementById('lastEdited');
+  if(el) el.textContent = fmtLastEdited(lastEditedISO);
+}
+function nowISO(){ return new Date().toISOString(); }
+function touchEdited(){
+  lastEditedISO = nowISO();
+  updateLastEditedUI();
+}
+
+function applyFixedLogo(){
+  const logoBox = document.getElementById('logoBox');
+  if(!logoBox) return;
+  logoBox.innerHTML = '';
+  const img = document.createElement('img');
+  img.src = FIXED_LOGO_URL;
+  img.alt = 'Logo';
+  logoBox.appendChild(img);
+  logoBox.dataset.logo = FIXED_LOGO_URL;
+}
+
+function setVar(name, value){
+  document.documentElement.style.setProperty(name, value);
+}
+function escapeHTML(str){
+  return String(str).replace(/[&<>"']/g, m=>({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[m]));
+}
+function escapeAttr(str){
+  return escapeHTML(str).replace(/"/g,'&quot;');
+}
+function safeJSON(s){ try{ return JSON.parse(s || '{}'); }catch(_){ return {}; } }
+function genId(){
+  if(window.crypto && typeof window.crypto.randomUUID === 'function') return window.crypto.randomUUID();
+  return 'tpl_' + Math.random().toString(16).slice(2) + '_' + Date.now().toString(16);
+}
+function normalizeCode(code){ return String(code || '').trim(); }
+function normalizeCategory(cat){ return String(cat || '').trim(); }
+function normalizeName(name){ return String(name || '').trim(); }
+
+function isoToLocalInputValue(iso){
+  try{
+    if(!iso) return '';
+    const d = new Date(iso);
+    if(isNaN(d.getTime())) return '';
+    const pad = (n)=>String(n).padStart(2,'0');
+    const y = d.getFullYear();
+    const m = pad(d.getMonth()+1);
+    const da = pad(d.getDate());
+    const h = pad(d.getHours());
+    const mi = pad(d.getMinutes());
+    return `${y}-${m}-${da}T${h}:${mi}`;
+  }catch(_){ return ''; }
+}
+
+function localInputValueToISO(val){
+  try{
+    if(!val) return '';
+    const d = new Date(val);
+    if(isNaN(d.getTime())) return '';
+    return d.toISOString();
+  }catch(_){ return ''; }
+}
+
+function getAlertControls(){
+  const enabled = !!document.getElementById('alertEnabled')?.checked;
+  const everyDays = parseInt(String(document.getElementById('alertEveryDays')?.value || '0'), 10) || 0;
+  const startVal = String(document.getElementById('alertStartAt')?.value || '');
+  const startISO = localInputValueToISO(startVal);
+  return {
+    alertEnabled: enabled,
+    alertEveryDays: enabled ? Math.max(1, everyDays) : 0,
+    alertStartAt: enabled ? (startISO || '') : ''
+  };
+}
+
+function setAlertControlsFromTemplate(tpl){
+  const enabled = !!(tpl && tpl.alertEnabled);
+  const every = tpl ? Number(tpl.alertEveryDays || 0) : 0;
+  const startAt = tpl ? String(tpl.alertStartAt || tpl.createdAt || '') : '';
+
+  const cb = document.getElementById('alertEnabled');
+  const inpEvery = document.getElementById('alertEveryDays');
+  const inpStart = document.getElementById('alertStartAt');
+
+  if(cb) cb.checked = enabled;
+  if(inpEvery) inpEvery.value = String(every > 0 ? every : 15);
+  if(inpStart) inpStart.value = isoToLocalInputValue(startAt);
+
+  refreshAlertMeta();
+}
+
+function resetAlertControls(){
+  const cb = document.getElementById('alertEnabled');
+  const inpEvery = document.getElementById('alertEveryDays');
+  const inpStart = document.getElementById('alertStartAt');
+
+  if(cb) cb.checked = false;
+  if(inpEvery) inpEvery.value = '15';
+  if(inpStart) inpStart.value = '';
+
+  refreshAlertMeta();
+}
+
+function fmtDateShort(iso){
+  try{
     if(!iso) return '—';
-    try{ return new Date(iso).toLocaleString('es-ES'); }catch(e){ return String(iso); }
-  }
-  function updateLastEditedUI(){
-    const el = document.getElementById('lastEdited');
-    if(el) el.textContent = fmtLastEdited(lastEditedISO);
-  }
-  function nowISO(){ return new Date().toISOString(); }
-  function touchEdited(){
-    lastEditedISO = nowISO();
-    updateLastEditedUI();
-  }
+    return new Date(iso).toLocaleString('es-ES');
+  }catch(_){ return String(iso || '—'); }
+}
 
-  function applyFixedLogo(){
-    const logoBox = document.getElementById('logoBox');
-    if(!logoBox) return;
-    logoBox.innerHTML = '';
-    const img = document.createElement('img');
-    img.src = FIXED_LOGO_URL;
-    img.alt = 'Logo';
-    logoBox.appendChild(img);
-    logoBox.dataset.logo = FIXED_LOGO_URL;
+function refreshAlertMeta(){
+  const meta = document.getElementById('alertMeta');
+  if(!meta) return;
+
+  const c = getAlertControls();
+  if(!c.alertEnabled){
+    meta.innerHTML = '<i>Alertas desactivadas para este formulario.</i>';
+    return;
   }
 
-  /* ===== helpers ===== */
-  function setVar(name, value){
-    document.documentElement.style.setProperty(name, value);
+  const startTxt = c.alertStartAt ? fmtDateShort(c.alertStartAt) : '—';
+  meta.innerHTML = `<b>Activadas:</b> cada <b>${escapeHTML(String(c.alertEveryDays))}</b> días · <b>Inicio:</b> ${escapeHTML(startTxt)}`;
+}
+
+function validateAlertControlsOrWarn(){
+  const c = getAlertControls();
+  if(!c.alertEnabled) return { ok:true, value:c };
+  if(!c.alertEveryDays || c.alertEveryDays <= 0){
+    alert('Alertas: indica una periodicidad en días (> 0).');
+    return { ok:false, value:c };
   }
-  function escapeHTML(str){
-    return String(str).replace(/[&<>"']/g, m=>({
-      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
-    }[m]));
+  return { ok:true, value:c };
+}
+
+function showCloudError(err){
+  const short = fsErrShort(err);
+  alert('Error guardando/leyendo en la nube (Firestore).\n\n' + short + fsRulesHint(err));
+  console.error(err);
+}
+
+let tagReadMode = null;
+
+function setTagStatus(html){
+  const el = document.getElementById('tagStatus');
+  if(el) el.innerHTML = html || '';
+}
+
+function gotoByTag(){
+  const code = normalizeCode(document.getElementById('tagInput')?.value || '');
+  if(!code){ alert('No hay código/TAG.'); return; }
+  gotoByCode(code);
+}
+
+let lastFocusedFormField = null;
+
+function isEditableField(el){
+  if(!el) return false;
+  if(el.id === 'tagInput') return false;
+  if(el.disabled) return false;
+  const tag = (el.tagName || '').toLowerCase();
+  if(tag === 'input'){
+    const type = (el.getAttribute('type') || 'text').toLowerCase();
+    return !['button','submit','checkbox','radio','file','color','range','hidden'].includes(type);
   }
-  function escapeAttr(str){
-    return escapeHTML(str).replace(/"/g,'&quot;');
-  }
-  function safeJSON(s){ try{ return JSON.parse(s || '{}'); }catch(e){ return {}; } }
-  function genId(){
-    if(window.crypto && typeof window.crypto.randomUUID === 'function') return window.crypto.randomUUID();
-    return 'tpl_' + Math.random().toString(16).slice(2) + '_' + Date.now().toString(16);
-  }
-  function normalizeCode(code){ return String(code || '').trim(); }
-  function normalizeCategory(cat){ return String(cat || '').trim(); }
-  function normalizeName(name){ return String(name || '').trim(); }
-
-  function showCloudError(err){
-    const name = (err && err.name) ? err.name : '';
-    const msg = (err && err.message) ? err.message : String(err || '');
-    alert('Error guardando/leyendo en la nube (Firestore).\n\n' + (name ? (name + ': ') : '') + msg);
-    console.error(err);
-  }
-
-  /* ===== TAG / NFC ===== */
-  let tagReadMode = null; // 'save' | 'goto' | null
-
-  function setTagStatus(html){
-    const el = document.getElementById('tagStatus');
-    if(el) el.innerHTML = html || '';
-  }
-
-  function gotoByTag(){
-    const code = normalizeCode(document.getElementById('tagInput')?.value || '');
-    if(!code){ alert('No hay código/TAG.'); return; }
-    gotoByCode(code);
-  }
-
-  /* ===== Autofoco para lectores NFC tipo "teclado" ===== */
-  let lastFocusedFormField = null;
-
-  function isEditableField(el){
-    if(!el) return false;
-    if(el.id === 'tagInput') return false;
-    if(el.disabled) return false;
-    const tag = (el.tagName || '').toLowerCase();
-    if(tag === 'input'){
-      const type = (el.getAttribute('type') || 'text').toLowerCase();
-      return !['button','submit','checkbox','radio','file','color','range','hidden'].includes(type);
-    }
-    if(tag === 'textarea') return true;
-    return false;
-  }
-
-  function focusIfEditable(el){
-    if(!isEditableField(el)) return;
-    try{
-      el.focus({ preventScroll:true });
-      lastFocusedFormField = el;
-    }catch(e){}
-  }
-
-  function setupAutoFocusForNfc(){
-    const cap = document.getElementById('capture');
-    if(!cap) return;
-
-    cap.addEventListener('focusin', (e)=>{
-      if(isEditableField(e.target)) lastFocusedFormField = e.target;
-    });
-
-    cap.addEventListener('mousemove', (e)=>{
-      const el = e.target;
-      if(isEditableField(el) && document.activeElement !== el){
-        focusIfEditable(el);
-      }
-    }, { passive:true });
-
-    cap.addEventListener('touchstart', (e)=>{
-      const el = e.target;
-      if(isEditableField(el)) focusIfEditable(el);
-    }, { passive:true });
-  }
-
-  /* ===== Web NFC (para tu caso: ventana del sistema pero no escribe) ===== */
-  let ndefReader = null;
-  let nfcActive = false;
-
-  function webNfcSupported(){
-    return ('NDEFReader' in window);
-  }
-  function isSecureContextOk(){
-    return window.isSecureContext || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
-  }
-
-  function decodeNdefTextRecord(record){
-    try{
-      if(record.recordType !== 'text') return '';
-      const u8 = new Uint8Array(record.data);
-      if(!u8.length) return '';
-      const status = u8[0];
-      const langLen = status & 0x3F;
-      const isUtf16 = (status & 0x80) !== 0;
-      const encoding = isUtf16 ? 'utf-16' : 'utf-8';
-      const textBytes = u8.slice(1 + langLen);
-      return new TextDecoder(encoding).decode(textBytes);
-    }catch(e){
-      return '';
-    }
-  }
-
-  function writeCodeToInputs(code){
-    const c = normalizeCode(code);
-    if(!c) return;
-
-    const tagInp = document.getElementById('tagInput');
-    if(tagInp){
-      tagInp.value = c;
-      tagInp.dispatchEvent(new Event('input', { bubbles:true }));
-      tagInp.dispatchEvent(new Event('change', { bubbles:true }));
-      try{ tagInp.focus(); }catch(e){}
-    }
-
-    if(lastFocusedFormField && isEditableField(lastFocusedFormField)){
-      try{
-        lastFocusedFormField.value = c;
-        lastFocusedFormField.dispatchEvent(new Event('input', { bubbles:true }));
-        lastFocusedFormField.dispatchEvent(new Event('change', { bubbles:true }));
-      }catch(e){}
-    }
-  }
-
-  async function startWebNfcScan(){
-    if(nfcActive){
-      setTagStatus('<b>NFC:</b> ya está activo. Acerca el TAG…');
-      return;
-    }
-    if(!webNfcSupported()){
-      setTagStatus('<b>Web NFC no disponible</b> en este navegador. Usa Chrome Android.');
-      return;
-    }
-    if(!isSecureContextOk()){
-      setTagStatus('<b>Web NFC requiere HTTPS</b> (o localhost). Abre esta página en HTTPS para leer el TAG.');
-      return;
-    }
-
-    try{
-      ndefReader = new NDEFReader();
-      await ndefReader.scan();
-      nfcActive = true;
-      document.getElementById('btnStopNfc').disabled = false;
-      setTagStatus('<b>NFC:</b> acercar TAG…');
-
-      ndefReader.onreadingerror = () => {
-        setTagStatus('<b>NFC:</b> error de lectura. Prueba otra vez.');
-      };
-
-      ndefReader.onreading = async (event) => {
-        let code = '';
-
-        if(event.serialNumber) code = normalizeCode(event.serialNumber);
-
-        if(!code && event.message && event.message.records){
-          for(const r of event.message.records){
-            const t = normalizeCode(decodeNdefTextRecord(r));
-            if(t){ code = t; break; }
-          }
-        }
-
-        if(!code && event.message && event.message.records && event.message.records.length){
-          try{
-            const r0 = event.message.records[0];
-            const u8 = new Uint8Array(r0.data);
-            const t = normalizeCode(new TextDecoder('utf-8').decode(u8));
-            if(t) code = t;
-          }catch(e){}
-        }
-
-        if(code){
-          writeCodeToInputs(code);
-
-          if(tagReadMode === 'goto'){
-            setTagStatus(`<b>NFC leído:</b> ${escapeHTML(code)}<br>→ yendo al formulario asociado…`);
-            gotoByCode(code);
-          }else if(tagReadMode === 'save'){
-            setTagStatus(`<b>NFC leído:</b> ${escapeHTML(code)}<br>→ se usará como código al guardar/actualizar plantilla.`);
-          }else{
-            setTagStatus(`<b>NFC leído:</b> ${escapeHTML(code)}`);
-            const t = await tplByCode(code);
-            if(t) gotoByCode(code);
-          }
-        }else{
-          setTagStatus('<b>NFC:</b> leído pero sin código NDEF utilizable (usa TAG con NDEF Text o Serial disponible).');
-        }
-      };
-    }catch(err){
-      nfcActive = false;
-      document.getElementById('btnStopNfc').disabled = true;
-      const name = (err && err.name) ? err.name : '';
-      if(name === 'NotAllowedError'){
-        setTagStatus('<b>NFC:</b> permiso denegado. Acepta el permiso y pulsa "Leer TAG" de nuevo.');
-      }else if(name === 'NotSupportedError'){
-        setTagStatus('<b>NFC:</b> no soportado en este dispositivo/navegador.');
-      }else{
-        setTagStatus('<b>NFC:</b> error iniciando lectura: ' + escapeHTML(name || String(err || '')));
-      }
-    }
-  }
-
-  function stopWebNfcScan(){
-    if(ndefReader){
-      try{ ndefReader.onreading = null; }catch(e){}
-      try{ ndefReader.onreadingerror = null; }catch(e){}
-    }
-    ndefReader = null;
-    nfcActive = false;
-    document.getElementById('btnStopNfc').disabled = true;
-    setTagStatus('<b>NFC:</b> detenido.');
-  }
-
-  function focusTagReader(mode){
-    tagReadMode = mode || null;
-
-    const inp = document.getElementById('tagInput');
-    if(inp){
-      inp.focus();
-      inp.select();
-    }
-
-    if(tagReadMode === 'save'){
-      setTagStatus('<b>Modo:</b> Leer TAG para <b>ASOCIAR</b> al guardar. (Acerca el TAG)');
-    }else if(tagReadMode === 'goto'){
-      setTagStatus('<b>Modo:</b> Leer TAG para <b>IR</b> al formulario. (Acerca el TAG)');
-    }else{
-      setTagStatus('');
-    }
-
-    startWebNfcScan();
-  }
-
-  /* ===== persistent templates (Firestore) ===== */
-  let templatesCache = [];
-  let currentTemplateId = null;
-
-  async function loadTemplatesCache(){
-    if(!cloudReady()){
-      templatesCache = [];
-      return;
-    }
-    const arr = await cloudFetchAllTemplates();
-    templatesCache = arr;
-  }
-
-  function readTemplates(){
-    return Array.isArray(templatesCache) ? templatesCache : [];
-  }
-
-  function tplById(id){
-    return readTemplates().find(t => t.id === id) || null;
-  }
-
-  async function tplByCode(code){
-    const c = normalizeCode(code);
-    if(!c) return null;
-    // primero cache, luego cloud (por si hay desfase)
-    const local = readTemplates().find(t => normalizeCode(t.code) === c) || null;
-    if(local) return local;
-    try{
-      const t = await cloudFindByCode(c);
-      if(t){
-        // refrescar cache suave
-        const idx = templatesCache.findIndex(x => x.id === t.id);
-        if(idx >= 0) templatesCache[idx] = t;
-        else templatesCache.push(t);
-      }
-      return t;
-    }catch(e){
-      console.error(e);
-      return null;
-    }
-  }
-
-  function listCategories(templates){
-    const set = new Set();
-    templates.forEach(t=>{
-      const c = normalizeCategory(t.category);
-      if(c) set.add(c);
-    });
-    return [...set].sort((a,b)=>a.localeCompare(b,'es'));
-  }
-  function listTemplatesByCategory(templates, category){
-    const c = normalizeCategory(category);
-    return templates
-      .filter(t => normalizeCategory(t.category) === c)
-      .sort((a,b)=>normalizeName(a.name).localeCompare(normalizeName(b.name),'es'));
-  }
-
-  function refreshTemplateUI(keepSelection=true){
-    const templates = readTemplates();
-    const catSel = document.getElementById('tplCategory');
-    const formSel = document.getElementById('tplForm');
-
-    const prevCat = keepSelection ? (catSel.value || '') : '';
-    const prevForm = keepSelection ? (formSel.value || '') : '';
-
-    const cats = listCategories(templates);
-
-    catSel.innerHTML = '';
-    if(cats.length === 0){
-      const o = document.createElement('option');
-      o.value = '';
-      o.textContent = '— Sin categorías —';
-      catSel.appendChild(o);
-    }else{
-      const o0 = document.createElement('option');
-      o0.value = '';
-      o0.textContent = '— Selecciona —';
-      catSel.appendChild(o0);
-
-      cats.forEach(c=>{
-        const o = document.createElement('option');
-        o.value = c;
-        o.textContent = c;
-        catSel.appendChild(o);
-      });
-
-      if(prevCat && cats.includes(prevCat)) catSel.value = prevCat;
-    }
-
-    const chosenCat = catSel.value || '';
-    const forms = chosenCat ? listTemplatesByCategory(templates, chosenCat) : [];
-
-    formSel.innerHTML = '';
-    if(!chosenCat){
-      const o = document.createElement('option');
-      o.value = '';
-      o.textContent = '— Selecciona una categoría —';
-      formSel.appendChild(o);
-    }else if(forms.length === 0){
-      const o = document.createElement('option');
-      o.value = '';
-      o.textContent = '— Sin formularios —';
-      formSel.appendChild(o);
-    }else{
-      const o0 = document.createElement('option');
-      o0.value = '';
-      o0.textContent = '— Selecciona —';
-      formSel.appendChild(o0);
-
-      forms.forEach(t=>{
-        const o = document.createElement('option');
-        o.value = t.id;
-        const code = normalizeCode(t.code);
-        o.textContent = code ? `${t.name} [${code}]` : t.name;
-        formSel.appendChild(o);
-      });
-
-      if(prevForm && forms.some(f=>f.id===prevForm)) formSel.value = prevForm;
-    }
-
-    updateTemplateMeta();
-  }
-
-  function updateTemplateMeta(){
-    const meta = document.getElementById('tplMeta');
-    const btnUpd = document.getElementById('btnUpdateTpl');
-    const btnDel = document.getElementById('btnDeleteTpl');
-
-    if(!currentTemplateId){
-      meta.textContent = '';
-      btnUpd.disabled = true;
-      btnDel.disabled = true;
-      return;
-    }
-
-    const t = tplById(currentTemplateId);
-    if(!t){
-      currentTemplateId = null;
-      meta.textContent = '';
-      btnUpd.disabled = true;
-      btnDel.disabled = true;
-      return;
-    }
-
-    const updated = t.updatedAt ? new Date(t.updatedAt).toLocaleString('es-ES') : '—';
-    const code = normalizeCode(t.code);
-    meta.innerHTML =
-      `<b>Cargada:</b> ${escapeHTML(t.category)} / ${escapeHTML(t.name)}`
-      + (code ? `<br><b>Código:</b> ${escapeHTML(code)}` : '')
-      + `<br><b>Actualizada:</b> ${escapeHTML(updated)}`;
-
-    btnUpd.disabled = false;
-    btnDel.disabled = false;
-  }
-
-  async function onCategoryChange(){
-    currentTemplateId = null;
-    refreshTemplateUI(true);
-  }
-
-  async function onTemplateChange(){
-    const id = document.getElementById('tplForm').value || '';
-    if(!id){
-      currentTemplateId = null;
-      updateTemplateMeta();
-      return;
-    }
-    const t = tplById(id);
-    if(!t || !t.data){
-      alert('Plantilla no encontrada o inválida.');
-      currentTemplateId = null;
-      updateTemplateMeta();
-      return;
-    }
-    loadLayoutFromData(t.data);
-    currentTemplateId = id;
-
-    const code = normalizeCode(t.code);
-    if(code){
-      const tagInp = document.getElementById('tagInput');
-      if(tagInp) tagInp.value = code;
-    }
-    updateTemplateMeta();
-  }
-
-  async function gotoByCode(code){
-    const c = normalizeCode(code);
-    if(!c){ alert('Código vacío.'); return; }
-
-    let t = await tplByCode(c);
-    if(!t){
-      alert('No se ha encontrado ningún formulario con ese código.');
-      return;
-    }
-
-    loadLayoutFromData(t.data);
-    currentTemplateId = t.id;
-
-    const catSel = document.getElementById('tplCategory');
-    const formSel = document.getElementById('tplForm');
-
-    catSel.value = t.category || '';
-    refreshTemplateUI(true);
-    formSel.value = t.id;
-
-    const tagInp = document.getElementById('tagInput');
-    if(tagInp) tagInp.value = c;
-
-    updateTemplateMeta();
-  }
-
-  async function saveTemplateCore({name, category, code}){
-    const data = serialize();
-    const templates = readTemplates();
-
-    const existing = templates.find(t => normalizeCategory(t.category)===category && normalizeName(t.name)===name);
-    if(existing){
-      const ok = confirm('Ya existe una plantilla con ese nombre en esa categoría.\n¿Quieres sobrescribirla?');
-      if(!ok) return;
-
-      existing.data = data;
-      existing.updatedAt = nowISO();
-      if(code) existing.code = code;
-
-      try{
-        await cloudUpsertTemplate(existing);
-        await loadTemplatesCache();
-      }catch(e){
-        showCloudError(e);
-        return;
-      }
-
-      currentTemplateId = existing.id;
-      document.getElementById('tplCategory').value = existing.category;
-      refreshTemplateUI(true);
-      document.getElementById('tplForm').value = existing.id;
-      updateTemplateMeta();
-      return;
-    }
-
-    const tpl = {
-      id: genId(),
-      name,
-      category,
-      code: code || '',
-      createdAt: nowISO(),
-      updatedAt: nowISO(),
-      data
-    };
-
-    try{
-      await cloudUpsertTemplate(tpl);
-      await loadTemplatesCache();
-    }catch(e){
-      showCloudError(e);
-      return;
-    }
-
-    currentTemplateId = tpl.id;
-    document.getElementById('tplCategory').value = tpl.category;
-    refreshTemplateUI(true);
-    document.getElementById('tplForm').value = tpl.id;
-    updateTemplateMeta();
-  }
-
-  async function saveTemplatePrompt(){
-    if(!cloudReady()){
-      alert('Firestore no está disponible.\n\nRevisa que el SDK se haya cargado y que tengas Firestore habilitado en el proyecto.\n(También revisa las reglas de seguridad).');
-      return;
-    }
-
-    const name = normalizeName(prompt('Nombre del formulario (plantilla):', ''));
-    if(!name) return;
-
-    const category = normalizeCategory(prompt('Categoría:', 'General'));
-    if(!category) return;
-
-    const suggestedCode = normalizeCode(document.getElementById('tagInput')?.value || '');
-    const code = normalizeCode(prompt('Código (TAG) para asociar (opcional):', suggestedCode));
-    if(code){
-      const tagInp = document.getElementById('tagInput');
-      if(tagInp) tagInp.value = code;
-    }
-
-    await saveTemplateCore({name, category, code});
-  }
-
-  async function updateCurrentTemplate(){
-    if(!currentTemplateId){
-      alert('No hay plantilla cargada para actualizar.');
-      return;
-    }
-    const t = tplById(currentTemplateId);
-    if(!t){
-      alert('Plantilla no encontrada.');
-      currentTemplateId = null;
-      updateTemplateMeta();
-      return;
-    }
-    const ok = confirm(`Vas a actualizar la plantilla:\n${t.category} / ${t.name}\n\n¿Continuar?`);
-    if(!ok) return;
-
-    t.data = serialize();
-    t.updatedAt = nowISO();
-
-    const tagCode = normalizeCode(document.getElementById('tagInput')?.value || '');
-    if(tagCode) t.code = tagCode;
-
-    try{
-      await cloudUpsertTemplate(t);
-      await loadTemplatesCache();
-    }catch(e){
-      showCloudError(e);
-      return;
-    }
-
-    document.getElementById('tplCategory').value = t.category;
-    refreshTemplateUI(true);
-    document.getElementById('tplForm').value = t.id;
-    updateTemplateMeta();
-  }
-
-  async function deleteCurrentTemplate(){
-    if(!currentTemplateId){
-      alert('No hay plantilla cargada para borrar.');
-      return;
-    }
-    const t = tplById(currentTemplateId);
-    if(!t){
-      currentTemplateId = null;
-      updateTemplateMeta();
-      return;
-    }
-    const ok = confirm(`¿Borrar esta plantilla?\n${t.category} / ${t.name}\n\nEsta acción no se puede deshacer.`);
-    if(!ok) return;
-
-    try{
-      await cloudDeleteTemplate(currentTemplateId);
-      await loadTemplatesCache();
-    }catch(e){
-      showCloudError(e);
-      return;
-    }
-
-    currentTemplateId = null;
-    refreshTemplateUI(false);
-    document.getElementById('tplCategory').value = '';
-    refreshTemplateUI(true);
-  }
-
-  async function duplicateCurrentToNewTemplate(){
-    if(!cloudReady()){
-      alert('Firestore no está disponible.\n\nRevisa que el SDK se haya cargado y que tengas Firestore habilitado en el proyecto.\n(También revisa las reglas de seguridad).');
-      return;
-    }
-
-    const name = normalizeName(prompt('Nombre de la nueva plantilla (duplicado):', ''));
-    if(!name) return;
-
-    const category = normalizeCategory(prompt('Categoría:', document.getElementById('tplCategory').value || 'General'));
-    if(!category) return;
-
-    const suggestedCode = normalizeCode(document.getElementById('tagInput')?.value || '');
-    const code = normalizeCode(prompt('Código (TAG) para asociar (opcional):', suggestedCode));
-    if(code){
-      const tagInp = document.getElementById('tagInput');
-      if(tagInp) tagInp.value = code;
-    }
-
-    const data = serialize();
-    const templates = readTemplates();
-
-    const existing = templates.find(t => normalizeCategory(t.category)===category && normalizeName(t.name)===name);
-    if(existing){
-      const ok = confirm('Ya existe una plantilla con ese nombre en esa categoría.\n¿Quieres sobrescribirla?');
-      if(!ok) return;
-
-      existing.data = data;
-      existing.updatedAt = nowISO();
-      if(code) existing.code = code;
-
-      try{
-        await cloudUpsertTemplate(existing);
-        await loadTemplatesCache();
-      }catch(e){
-        showCloudError(e);
-        return;
-      }
-
-      currentTemplateId = existing.id;
-      document.getElementById('tplCategory').value = existing.category;
-      refreshTemplateUI(true);
-      document.getElementById('tplForm').value = existing.id;
-      updateTemplateMeta();
-      return;
-    }
-
-    const tpl = { id: genId(), name, category, code: code || '', createdAt: nowISO(), updatedAt: nowISO(), data };
-
-    try{
-      await cloudUpsertTemplate(tpl);
-      await loadTemplatesCache();
-    }catch(e){
-      showCloudError(e);
-      return;
-    }
-
-    currentTemplateId = tpl.id;
-    document.getElementById('tplCategory').value = tpl.category;
-    refreshTemplateUI(true);
-    document.getElementById('tplForm').value = tpl.id;
-    updateTemplateMeta();
-  }
-
-  function newBlankForm(){
-    const ok = confirm('Esto sustituirá el formulario actual por uno nuevo (en blanco) en pantalla.\nNo afecta a plantillas guardadas.\n\n¿Continuar?');
-    if(!ok) return;
-
-    currentTemplateId = null;
-    document.getElementById('tplForm').value = '';
-    applyHeaderText();
-
-    const page = document.getElementById('capture');
-    [...page.querySelectorAll('.field')].forEach(f => f.remove());
-    refreshAutoGrow();
-    updateTemplateMeta();
-  }
-
-  /* ===== header editing ===== */
-  function applyHeaderText(shouldTouch=true){
-    document.getElementById('docTitle').textContent = document.getElementById('hdrTitle').value;
-    document.getElementById('docSubtitle').textContent = document.getElementById('hdrSubtitle').value;
-    if(shouldTouch) touchEdited();
-  }
-
-  function autoGrow(t){
-    t.style.height = 'auto';
-    t.style.height = (t.scrollHeight + 2) + 'px';
-  }
-  function refreshAutoGrow(){
-    document.querySelectorAll('textarea.autogrow').forEach(autoGrow);
-  }
-  document.addEventListener('input', (e)=>{
-    if(e.target.matches('textarea.autogrow')) autoGrow(e.target);
+  if(tag === 'textarea') return true;
+  return false;
+}
+
+function focusIfEditable(el){
+  if(!isEditableField(el)) return;
+  try{
+    el.focus({ preventScroll:true });
+    lastFocusedFormField = el;
+  }catch(_){}
+}
+
+function setupAutoFocusForNfc(){
+  const cap = document.getElementById('capture');
+  if(!cap) return;
+
+  cap.addEventListener('focusin', (e)=>{
+    if(isEditableField(e.target)) lastFocusedFormField = e.target;
   });
 
-  /* ===== add/remove fields ===== */
-  let radioCounter = 1;
+  cap.addEventListener('mousemove', (e)=>{
+    const el = e.target;
+    if(isEditableField(el) && document.activeElement !== el){
+      focusIfEditable(el);
+    }
+  }, { passive:true });
 
-  function fieldHeadHTML(title){
-    return `
-      <div class="field-head">
-        <div class="title" ondblclick="editTitle(this)">${escapeHTML(title)}</div>
-        <div class="actions">
-          <button class="iconbtn" title="Subir" onclick="moveUp(this)">↑</button>
-          <button class="iconbtn" title="Bajar" onclick="moveDown(this)">↓</button>
-          <button class="iconbtn" title="Borrar" onclick="removeField(this)">✕</button>
-        </div>
+  cap.addEventListener('touchstart', (e)=>{
+    const el = e.target;
+    if(isEditableField(el)) focusIfEditable(el);
+  }, { passive:true });
+}
+
+let ndefReader = null;
+let nfcActive = false;
+
+function webNfcSupported(){
+  return ('NDEFReader' in window);
+}
+function isSecureContextOk(){
+  return window.isSecureContext || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+}
+
+function decodeNdefTextRecord(record){
+  try{
+    if(record.recordType !== 'text') return '';
+    const u8 = new Uint8Array(record.data);
+    if(!u8.length) return '';
+    const status = u8[0];
+    const langLen = status & 0x3F;
+    const isUtf16 = (status & 0x80) !== 0;
+    const encoding = isUtf16 ? 'utf-16' : 'utf-8';
+    const textBytes = u8.slice(1 + langLen);
+    return new TextDecoder(encoding).decode(textBytes);
+  }catch(_){
+    return '';
+  }
+}
+
+function writeCodeToInputs(code){
+  const c = normalizeCode(code);
+  if(!c) return;
+
+  const tagInp = document.getElementById('tagInput');
+  if(tagInp){
+    tagInp.value = c;
+    tagInp.dispatchEvent(new Event('input', { bubbles:true }));
+    tagInp.dispatchEvent(new Event('change', { bubbles:true }));
+    try{ tagInp.focus(); }catch(_){}
+  }
+
+  if(lastFocusedFormField && isEditableField(lastFocusedFormField)){
+    try{
+      lastFocusedFormField.value = c;
+      lastFocusedFormField.dispatchEvent(new Event('input', { bubbles:true }));
+      lastFocusedFormField.dispatchEvent(new Event('change', { bubbles:true }));
+    }catch(_){}
+  }
+}
+
+async function startWebNfcScan(){
+  if(nfcActive){
+    setTagStatus('<b>NFC:</b> ya está activo. Acerca el TAG…');
+    return;
+  }
+  if(!webNfcSupported()){
+    setTagStatus('<b>Web NFC no disponible</b> en este navegador. Usa Chrome Android.');
+    return;
+  }
+  if(!isSecureContextOk()){
+    setTagStatus('<b>Web NFC requiere HTTPS</b> (o localhost). Abre esta página en HTTPS para leer el TAG.');
+    return;
+  }
+
+  try{
+    ndefReader = new NDEFReader();
+    await ndefReader.scan();
+    nfcActive = true;
+    document.getElementById('btnStopNfc').disabled = false;
+    setTagStatus('<b>NFC:</b> acercar TAG…');
+
+    ndefReader.onreadingerror = () => {
+      setTagStatus('<b>NFC:</b> error de lectura. Prueba otra vez.');
+    };
+
+    ndefReader.onreading = async (event) => {
+      let code = '';
+
+      if(event.serialNumber) code = normalizeCode(event.serialNumber);
+
+      if(!code && event.message && event.message.records){
+        for(const r of event.message.records){
+          const t = normalizeCode(decodeNdefTextRecord(r));
+          if(t){ code = t; break; }
+        }
+      }
+
+      if(!code && event.message && event.message.records && event.message.records.length){
+        try{
+          const r0 = event.message.records[0];
+          const u8 = new Uint8Array(r0.data);
+          const t = normalizeCode(new TextDecoder('utf-8').decode(u8));
+          if(t) code = t;
+        }catch(_){}
+      }
+
+      if(code){
+        writeCodeToInputs(code);
+
+        if(tagReadMode === 'goto'){
+          setTagStatus(`<b>NFC leído:</b> ${escapeHTML(code)}<br>→ yendo al formulario asociado…`);
+          gotoByCode(code);
+        }else if(tagReadMode === 'save'){
+          setTagStatus(`<b>NFC leído:</b> ${escapeHTML(code)}<br>→ se usará como código al guardar/actualizar plantilla.`);
+        }else{
+          setTagStatus(`<b>NFC leído:</b> ${escapeHTML(code)}`);
+          const t = await tplByCode(code);
+          if(t) gotoByCode(code);
+        }
+      }else{
+        setTagStatus('<b>NFC:</b> leído pero sin código NDEF utilizable (usa TAG con NDEF Text o Serial disponible).');
+      }
+    };
+  }catch(err){
+    nfcActive = false;
+    document.getElementById('btnStopNfc').disabled = true;
+    const name = (err && err.name) ? err.name : '';
+    if(name === 'NotAllowedError'){
+      setTagStatus('<b>NFC:</b> permiso denegado. Acepta el permiso y pulsa "Leer TAG" de nuevo.');
+    }else if(name === 'NotSupportedError'){
+      setTagStatus('<b>NFC:</b> no soportado en este dispositivo/navegador.');
+    }else{
+      setTagStatus('<b>NFC:</b> error iniciando lectura: ' + escapeHTML(name || String(err || '')));
+    }
+  }
+}
+
+function stopWebNfcScan(){
+  if(ndefReader){
+    try{ ndefReader.onreading = null; }catch(_){}
+    try{ ndefReader.onreadingerror = null; }catch(_){}
+  }
+  ndefReader = null;
+  nfcActive = false;
+  document.getElementById('btnStopNfc').disabled = true;
+  setTagStatus('<b>NFC:</b> detenido.');
+}
+
+function focusTagReader(mode){
+  tagReadMode = mode || null;
+
+  const inp = document.getElementById('tagInput');
+  if(inp){
+    inp.focus();
+    inp.select();
+  }
+
+  if(tagReadMode === 'save'){
+    setTagStatus('<b>Modo:</b> Leer TAG para <b>ASOCIAR</b> al guardar. (Acerca el TAG)');
+  }else if(tagReadMode === 'goto'){
+    setTagStatus('<b>Modo:</b> Leer TAG para <b>IR</b> al formulario. (Acerca el TAG)');
+  }else{
+    setTagStatus('');
+  }
+
+  startWebNfcScan();
+}
+
+let templatesCache = [];
+let currentTemplateId = null;
+
+async function loadTemplatesCache(){
+  if(!cloudReady()){
+    templatesCache = [];
+    return;
+  }
+  const arr = await cloudFetchAllTemplates();
+  templatesCache = arr;
+}
+
+function readTemplates(){
+  return Array.isArray(templatesCache) ? templatesCache : [];
+}
+
+function tplById(id){
+  return readTemplates().find(t => t.id === id) || null;
+}
+
+async function tplByCode(code){
+  const c = normalizeCode(code);
+  if(!c) return null;
+  const local = readTemplates().find(t => normalizeCode(t.code) === c) || null;
+  if(local) return local;
+  try{
+    const t = await cloudFindByCode(c);
+    if(t){
+      const idx = templatesCache.findIndex(x => x.id === t.id);
+      if(idx >= 0) templatesCache[idx] = t;
+      else templatesCache.push(t);
+    }
+    return t;
+  }catch(e){
+    console.error(e);
+    return null;
+  }
+}
+
+function listCategories(templates){
+  const set = new Set();
+  templates.forEach(t=>{
+    const c = normalizeCategory(t.category);
+    if(c) set.add(c);
+  });
+  return [...set].sort((a,b)=>a.localeCompare(b,'es'));
+}
+function listTemplatesByCategory(templates, category){
+  const c = normalizeCategory(category);
+  return templates
+    .filter(t => normalizeCategory(t.category) === c)
+    .sort((a,b)=>normalizeName(a.name).localeCompare(normalizeName(b.name),'es'));
+}
+
+function refreshTemplateUI(keepSelection=true){
+  const templates = readTemplates();
+  const catSel = document.getElementById('tplCategory');
+  const formSel = document.getElementById('tplForm');
+
+  const prevCat = keepSelection ? (catSel.value || '') : '';
+  const prevForm = keepSelection ? (formSel.value || '') : '';
+
+  const cats = listCategories(templates);
+
+  catSel.innerHTML = '';
+  if(cats.length === 0){
+    const o = document.createElement('option');
+    o.value = '';
+    o.textContent = '— Sin categorías —';
+    catSel.appendChild(o);
+  }else{
+    const o0 = document.createElement('option');
+    o0.value = '';
+    o0.textContent = '— Selecciona —';
+    catSel.appendChild(o0);
+
+    cats.forEach(c=>{
+      const o = document.createElement('option');
+      o.value = c;
+      o.textContent = c;
+      catSel.appendChild(o);
+    });
+
+    if(prevCat && cats.includes(prevCat)) catSel.value = prevCat;
+  }
+
+  const chosenCat = catSel.value || '';
+  const forms = chosenCat ? listTemplatesByCategory(templates, chosenCat) : [];
+
+  formSel.innerHTML = '';
+  if(!chosenCat){
+    const o = document.createElement('option');
+    o.value = '';
+    o.textContent = '— Selecciona una categoría —';
+    formSel.appendChild(o);
+  }else if(forms.length === 0){
+    const o = document.createElement('option');
+    o.value = '';
+    o.textContent = '— Sin formularios —';
+    formSel.appendChild(o);
+  }else{
+    const o0 = document.createElement('option');
+    o0.value = '';
+    o0.textContent = '— Selecciona —';
+    formSel.appendChild(o0);
+
+    forms.forEach(t=>{
+      const o = document.createElement('option');
+      o.value = t.id;
+      const code = normalizeCode(t.code);
+      o.textContent = code ? `${t.name} [${code}]` : t.name;
+      formSel.appendChild(o);
+    });
+
+    if(prevForm && forms.some(f=>f.id===prevForm)) formSel.value = prevForm;
+  }
+
+  updateTemplateMeta();
+}
+
+function updateTemplateMeta(){
+  const meta = document.getElementById('tplMeta');
+  const btnUpd = document.getElementById('btnUpdateTpl');
+  const btnDel = document.getElementById('btnDeleteTpl');
+
+  if(!currentTemplateId){
+    meta.textContent = '';
+    btnUpd.disabled = true;
+    btnDel.disabled = true;
+    return;
+  }
+
+  const t = tplById(currentTemplateId);
+  if(!t){
+    currentTemplateId = null;
+    meta.textContent = '';
+    btnUpd.disabled = true;
+    btnDel.disabled = true;
+    return;
+  }
+
+  const updated = t.updatedAt ? new Date(t.updatedAt).toLocaleString('es-ES') : '—';
+  const code = normalizeCode(t.code);
+
+  let alertLine = '<br><b>Alertas:</b> desactivadas';
+  if(t.alertEnabled && Number(t.alertEveryDays || 0) > 0){
+    const startTxt = t.alertStartAt ? new Date(t.alertStartAt).toLocaleString('es-ES') : '—';
+    alertLine = `<br><b>Alertas:</b> cada ${escapeHTML(String(t.alertEveryDays))} días · inicio ${escapeHTML(startTxt)}`;
+  }
+
+  meta.innerHTML =
+    `<b>Cargada:</b> ${escapeHTML(t.category)} / ${escapeHTML(t.name)}`
+    + (code ? `<br><b>Código:</b> ${escapeHTML(code)}` : '')
+    + alertLine
+    + `<br><b>Actualizada:</b> ${escapeHTML(updated)}`;
+
+  btnUpd.disabled = false;
+  btnDel.disabled = false;
+}
+
+async function onCategoryChange(){
+  currentTemplateId = null;
+  resetAlertControls();
+  refreshTemplateUI(true);
+}
+
+async function onTemplateChange(){
+  const id = document.getElementById('tplForm').value || '';
+  if(!id){
+    currentTemplateId = null;
+    resetAlertControls();
+    updateTemplateMeta();
+    return;
+  }
+  const t = tplById(id);
+  if(!t || !t.data){
+    alert('Plantilla no encontrada o inválida.');
+    currentTemplateId = null;
+    resetAlertControls();
+    updateTemplateMeta();
+    return;
+  }
+  loadLayoutFromData(t.data);
+  currentTemplateId = id;
+  setAlertControlsFromTemplate(t);
+
+  const code = normalizeCode(t.code);
+  if(code){
+    const tagInp = document.getElementById('tagInput');
+    if(tagInp) tagInp.value = code;
+  }
+  updateTemplateMeta();
+}
+
+async function gotoByCode(code){
+  const c = normalizeCode(code);
+  if(!c){ alert('Código vacío.'); return; }
+
+  let t = await tplByCode(c);
+  if(!t){
+    alert('No se ha encontrado ningún formulario con ese código.');
+    return;
+  }
+
+  loadLayoutFromData(t.data);
+  currentTemplateId = t.id;
+  setAlertControlsFromTemplate(t);
+
+  const catSel = document.getElementById('tplCategory');
+  const formSel = document.getElementById('tplForm');
+
+  catSel.value = t.category || '';
+  refreshTemplateUI(true);
+  formSel.value = t.id;
+
+  const tagInp = document.getElementById('tagInput');
+  if(tagInp) tagInp.value = c;
+
+  updateTemplateMeta();
+}
+
+async function saveTemplateCore({name, category, code}){
+  const data = serialize();
+  const templates = readTemplates();
+
+  const existing = templates.find(t => normalizeCategory(t.category)===category && normalizeName(t.name)===name);
+  if(existing){
+    const ok = confirm('Ya existe una plantilla con ese nombre en esa categoría.\n¿Quieres sobrescribirla?');
+    if(!ok) return;
+
+    existing.data = data;
+    existing.updatedAt = nowISO();
+    if(code) existing.code = code;
+
+    const v = validateAlertControlsOrWarn();
+    if(!v.ok) return;
+    existing.alertEnabled = !!v.value.alertEnabled;
+    existing.alertEveryDays = Number(v.value.alertEveryDays || 0);
+    existing.alertStartAt = v.value.alertEnabled ? (v.value.alertStartAt || existing.alertStartAt || existing.createdAt || nowISO()) : '';
+
+    try{
+      await cloudUpsertTemplate(existing);
+      await loadTemplatesCache();
+    }catch(e){
+      showCloudError(e);
+      return;
+    }
+
+    currentTemplateId = existing.id;
+    document.getElementById('tplCategory').value = existing.category;
+    refreshTemplateUI(true);
+    document.getElementById('tplForm').value = existing.id;
+    updateTemplateMeta();
+    return;
+  }
+
+  const v = validateAlertControlsOrWarn();
+  if(!v.ok) return;
+
+  const createdAt = nowISO();
+  const tpl = {
+    id: genId(),
+    name,
+    category,
+    code: code || '',
+    createdAt,
+    updatedAt: createdAt,
+    alertEnabled: !!v.value.alertEnabled,
+    alertEveryDays: Number(v.value.alertEveryDays || 0),
+    alertStartAt: v.value.alertEnabled ? (v.value.alertStartAt || createdAt) : '',
+    data
+  };
+
+  try{
+    await cloudUpsertTemplate(tpl);
+    await loadTemplatesCache();
+  }catch(e){
+    showCloudError(e);
+    return;
+  }
+
+  currentTemplateId = tpl.id;
+  document.getElementById('tplCategory').value = tpl.category;
+  refreshTemplateUI(true);
+  document.getElementById('tplForm').value = tpl.id;
+  updateTemplateMeta();
+}
+
+async function saveTemplatePrompt(){
+  if(!cloudReady()){
+    alert('Firestore no está disponible.\n\nRevisa que el SDK se haya cargado y que tengas Firestore habilitado en el proyecto.\n(También revisa las reglas de seguridad).');
+    return;
+  }
+
+  const name = normalizeName(prompt('Nombre del formulario (plantilla):', ''));
+  if(!name) return;
+
+  const category = normalizeCategory(prompt('Categoría:', 'General'));
+  if(!category) return;
+
+  const suggestedCode = normalizeCode(document.getElementById('tagInput')?.value || '');
+  const code = normalizeCode(prompt('Código (TAG) para asociar (opcional):', suggestedCode));
+  if(code){
+    const tagInp = document.getElementById('tagInput');
+    if(tagInp) tagInp.value = code;
+  }
+
+  await saveTemplateCore({name, category, code});
+}
+
+async function updateCurrentTemplate(){
+  if(!currentTemplateId){
+    alert('No hay plantilla cargada para actualizar.');
+    return;
+  }
+  const t = tplById(currentTemplateId);
+  if(!t){
+    alert('Plantilla no encontrada.');
+    currentTemplateId = null;
+    updateTemplateMeta();
+    return;
+  }
+  const ok = confirm(`Vas a actualizar la plantilla:\n${t.category} / ${t.name}\n\n¿Continuar?`);
+  if(!ok) return;
+
+  t.data = serialize();
+  t.updatedAt = nowISO();
+
+  const tagCode = normalizeCode(document.getElementById('tagInput')?.value || '');
+  if(tagCode) t.code = tagCode;
+
+  const v = validateAlertControlsOrWarn();
+  if(!v.ok) return;
+  t.alertEnabled = !!v.value.alertEnabled;
+  t.alertEveryDays = Number(v.value.alertEveryDays || 0);
+  t.alertStartAt = v.value.alertEnabled ? (v.value.alertStartAt || t.alertStartAt || t.createdAt || nowISO()) : '';
+
+  try{
+    await cloudUpsertTemplate(t);
+    await loadTemplatesCache();
+  }catch(e){
+    showCloudError(e);
+    return;
+  }
+
+  document.getElementById('tplCategory').value = t.category;
+  refreshTemplateUI(true);
+  document.getElementById('tplForm').value = t.id;
+  updateTemplateMeta();
+}
+
+async function deleteCurrentTemplate(){
+  if(!currentTemplateId){
+    alert('No hay plantilla cargada para borrar.');
+    return;
+  }
+  const t = tplById(currentTemplateId);
+  if(!t){
+    currentTemplateId = null;
+    updateTemplateMeta();
+    return;
+  }
+  const ok = confirm(`¿Borrar esta plantilla?\n${t.category} / ${t.name}\n\nEsta acción no se puede deshacer.`);
+  if(!ok) return;
+
+  try{
+    await cloudDeleteTemplate(currentTemplateId);
+    await loadTemplatesCache();
+  }catch(e){
+    showCloudError(e);
+    return;
+  }
+
+  currentTemplateId = null;
+  resetAlertControls();
+  refreshTemplateUI(false);
+  document.getElementById('tplCategory').value = '';
+  refreshTemplateUI(true);
+}
+
+async function duplicateCurrentToNewTemplate(){
+  if(!cloudReady()){
+    alert('Firestore no está disponible.\n\nRevisa que el SDK se haya cargado y que tengas Firestore habilitado en el proyecto.\n(También revisa las reglas de seguridad).');
+    return;
+  }
+
+  const name = normalizeName(prompt('Nombre de la nueva plantilla (duplicado):', ''));
+  if(!name) return;
+
+  const category = normalizeCategory(prompt('Categoría:', document.getElementById('tplCategory').value || 'General'));
+  if(!category) return;
+
+  const suggestedCode = normalizeCode(document.getElementById('tagInput')?.value || '');
+  const code = normalizeCode(prompt('Código (TAG) para asociar (opcional):', suggestedCode));
+  if(code){
+    const tagInp = document.getElementById('tagInput');
+    if(tagInp) tagInp.value = code;
+  }
+
+  const data = serialize();
+  const templates = readTemplates();
+
+  const existing = templates.find(t => normalizeCategory(t.category)===category && normalizeName(t.name)===name);
+  if(existing){
+    const ok = confirm('Ya existe una plantilla con ese nombre en esa categoría.\n¿Quieres sobrescribirla?');
+    if(!ok) return;
+
+    existing.data = data;
+    existing.updatedAt = nowISO();
+    if(code) existing.code = code;
+
+    const v = validateAlertControlsOrWarn();
+    if(!v.ok) return;
+    existing.alertEnabled = !!v.value.alertEnabled;
+    existing.alertEveryDays = Number(v.value.alertEveryDays || 0);
+    existing.alertStartAt = v.value.alertEnabled ? (v.value.alertStartAt || existing.alertStartAt || existing.createdAt || nowISO()) : '';
+
+    try{
+      await cloudUpsertTemplate(existing);
+      await loadTemplatesCache();
+    }catch(e){
+      showCloudError(e);
+      return;
+    }
+
+    currentTemplateId = existing.id;
+    document.getElementById('tplCategory').value = existing.category;
+    refreshTemplateUI(true);
+    document.getElementById('tplForm').value = existing.id;
+    updateTemplateMeta();
+    return;
+  }
+
+  const v = validateAlertControlsOrWarn();
+  if(!v.ok) return;
+
+  const createdAt = nowISO();
+  const tpl = {
+    id: genId(),
+    name,
+    category,
+    code: code || '',
+    createdAt,
+    updatedAt: createdAt,
+    alertEnabled: !!v.value.alertEnabled,
+    alertEveryDays: Number(v.value.alertEveryDays || 0),
+    alertStartAt: v.value.alertEnabled ? (v.value.alertStartAt || createdAt) : '',
+    data
+  };
+
+  try{
+    await cloudUpsertTemplate(tpl);
+    await loadTemplatesCache();
+  }catch(e){
+    showCloudError(e);
+    return;
+  }
+
+  currentTemplateId = tpl.id;
+  document.getElementById('tplCategory').value = tpl.category;
+  refreshTemplateUI(true);
+  document.getElementById('tplForm').value = tpl.id;
+  updateTemplateMeta();
+}
+
+function newBlankForm(){
+  const ok = confirm('Esto sustituirá el formulario actual por uno nuevo (en blanco) en pantalla.\nNo afecta a plantillas guardadas.\n\n¿Continuar?');
+  if(!ok) return;
+
+  currentTemplateId = null;
+  document.getElementById('tplForm').value = '';
+  resetAlertControls();
+  applyHeaderText();
+
+  const page = document.getElementById('capture');
+  [...page.querySelectorAll('.field')].forEach(f => f.remove());
+  refreshAutoGrow();
+  updateTemplateMeta();
+}
+
+function applyHeaderText(shouldTouch=true){
+  document.getElementById('docTitle').textContent = document.getElementById('hdrTitle').value;
+  document.getElementById('docSubtitle').textContent = document.getElementById('hdrSubtitle').value;
+  if(shouldTouch) touchEdited();
+}
+
+function autoGrow(t){
+  t.style.height = 'auto';
+  t.style.height = (t.scrollHeight + 2) + 'px';
+}
+function refreshAutoGrow(){
+  document.querySelectorAll('textarea.autogrow').forEach(autoGrow);
+}
+document.addEventListener('input', (e)=>{
+  if(e.target.matches('textarea.autogrow')) autoGrow(e.target);
+});
+
+let radioCounter = 1;
+
+function fieldHeadHTML(title){
+  return `
+    <div class="field-head">
+      <div class="title" ondblclick="editTitle(this)">${escapeHTML(title)}</div>
+      <div class="actions">
+        <button class="iconbtn" title="Subir" onclick="moveUp(this)">↑</button>
+        <button class="iconbtn" title="Bajar" onclick="moveDown(this)">↓</button>
+        <button class="iconbtn" title="Borrar" onclick="removeField(this)">✕</button>
+      </div>
+    </div>`;
+}
+
+function addField(){
+  const type = document.getElementById('newType').value;
+  const page = document.getElementById('capture');
+
+  const field = document.createElement('div');
+  field.className = 'field';
+  field.dataset.type = type;
+
+  if(type === 'text'){
+    field.dataset.title = 'Texto';
+    field.innerHTML = fieldHeadHTML('Texto') + `
+      <div class="field-body textline">
+        <input type="text" value="">
       </div>`;
   }
 
-  function addField(){
-    const type = document.getElementById('newType').value;
-    const page = document.getElementById('capture');
+  if(type === 'radio'){
+    field.dataset.title = 'Selección';
+    field.dataset.config = JSON.stringify({options:["Bien","Mal"]});
+    const name = 'r' + (radioCounter++);
+    field.innerHTML = fieldHeadHTML('Selección') + `
+      <div class="field-body" ondblclick="editRadioOptions(this)">
+        <div class="opts">
+          <label><input type="radio" name="${name}"> Bien</label>
+          <label><input type="radio" name="${name}"> Mal</label>
+        </div>
+        <textarea class="autogrow" placeholder="Observaciones"></textarea>
+      </div>`;
+  }
 
-    const field = document.createElement('div');
-    field.className = 'field';
-    field.dataset.type = type;
+  if(type === 'photos'){
+    field.dataset.title = 'Imagenes';
+    field.innerHTML = fieldHeadHTML('Imagenes') + `
+      <div class="field-body">
+        <input type="file" multiple accept="image/*" onchange="previewImages(this)">
+        <div class="photos"></div>
+      </div>`;
+  }
+
+  page.appendChild(field);
+  refreshAutoGrow();
+  touchEdited();
+}
+
+function removeField(btn){
+  btn.closest('.field').remove();
+  touchEdited();
+}
+
+function moveUp(btn){
+  const field = btn.closest('.field');
+  const prev = field.previousElementSibling;
+  if(prev && !prev.classList.contains('doc-header')){
+    field.parentNode.insertBefore(field, prev);
+    touchEdited();
+  }
+}
+
+function moveDown(btn){
+  const field = btn.closest('.field');
+  const next = field.nextElementSibling;
+  if(next){
+    field.parentNode.insertBefore(next, field);
+    touchEdited();
+  }
+}
+
+function editTitle(el){
+  const field = el.closest('.field');
+  const current = el.textContent.trim();
+  const val = prompt('Título del bloque:', current);
+  if(val === null) return;
+  el.textContent = val;
+  field.dataset.title = val;
+  touchEdited();
+}
+
+function editRadioOptions(body){
+  const field = body.closest('.field');
+  if(!field || field.dataset.type !== 'radio') return;
+
+  const cfg = safeJSON(field.dataset.config);
+  const current = (cfg.options || ["Bien","Mal"]).join(', ');
+  const val = prompt('Opciones separadas por coma:', current);
+  if(val === null) return;
+
+  const opts = val.split(',').map(s=>s.trim()).filter(Boolean);
+  cfg.options = opts.length ? opts : ["Bien","Mal"];
+  field.dataset.config = JSON.stringify(cfg);
+
+  const name = body.querySelector('input[type="radio"]')?.name || ('r' + (radioCounter++));
+  const wrap = body.querySelector('.opts');
+  wrap.innerHTML = cfg.options.map(o =>
+    `<label><input type="radio" name="${name}"> ${escapeHTML(o)}</label>`
+  ).join('');
+  touchEdited();
+}
+
+function previewImages(input){
+  const grid = input.closest('.field-body').querySelector('.photos');
+  grid.innerHTML = '';
+  touchEdited();
+  [...input.files].forEach(file=>{
+    const reader = new FileReader();
+    reader.onload = e=>{
+      const img = document.createElement('img');
+      img.src = e.target.result;
+      grid.appendChild(img);
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function getTheme(){
+  const styles = getComputedStyle(document.documentElement);
+  return {
+    border: styles.getPropertyValue('--border').trim(),
+    headerBg: styles.getPropertyValue('--header-bg').trim(),
+    headerText: styles.getPropertyValue('--header-text').trim(),
+    sectionBg: styles.getPropertyValue('--section-bg').trim(),
+    sectionText: styles.getPropertyValue('--section-text').trim(),
+    pageBg: styles.getPropertyValue('--page-bg').trim()
+  };
+}
+
+function serialize(){
+  const page = document.getElementById('capture');
+  const logoBox = document.getElementById('logoBox');
+
+  const header = {
+    title: document.getElementById('hdrTitle').value,
+    subtitle: document.getElementById('hdrSubtitle').value,
+    logo: FIXED_LOGO_URL,
+    lastEdited: lastEditedISO
+  };
+
+  if(logoBox) logoBox.dataset.logo = FIXED_LOGO_URL;
+
+  const fields = [...page.querySelectorAll('.field')].map(f=>{
+    const type = f.dataset.type || 'text';
+    const title = f.querySelector('.title')?.textContent?.trim() || '';
+    const config = safeJSON(f.dataset.config);
+
+    const out = { type, title, config };
 
     if(type === 'text'){
-      field.dataset.title = 'Texto';
-      field.innerHTML = fieldHeadHTML('Texto') + `
+      out.value = f.querySelector('input[type="text"]')?.value ?? '';
+    }
+    if(type === 'radio'){
+      const radios = [...f.querySelectorAll('input[type="radio"]')];
+      const checked = radios.find(r=>r.checked);
+      out.selected = checked ? checked.parentElement.textContent.trim() : '';
+      out.name = radios[0]?.name || '';
+      out.obs = f.querySelector('textarea')?.value ?? '';
+    }
+    if(type === 'photos'){
+      out.images = [...f.querySelectorAll('.photos img')].map(img=>img.src);
+    }
+    return out;
+  });
+
+  return { header, theme: getTheme(), fields };
+}
+
+function safeTemplatesForExport(arr){
+  if(!Array.isArray(arr)) return [];
+  return arr
+    .filter(t => t && typeof t === 'object')
+    .map(t => ({
+      id: String(t.id || ''),
+      name: String(t.name || ''),
+      category: String(t.category || ''),
+      code: String(t.code || ''),
+      createdAt: t.createdAt ? String(t.createdAt) : '',
+      updatedAt: t.updatedAt ? String(t.updatedAt) : '',
+      alertEnabled: !!t.alertEnabled,
+      alertEveryDays: Number(t.alertEveryDays || 0),
+      alertStartAt: t.alertStartAt ? String(t.alertStartAt) : (t.createdAt ? String(t.createdAt) : ''),
+      data: (t.data && typeof t.data === 'object') ? t.data : null
+    }))
+    .filter(t => t.id && t.name && t.category && t.data);
+}
+
+function serializeExport(){
+  const catSel = document.getElementById('tplCategory');
+  const formSel = document.getElementById('tplForm');
+  const tagInp = document.getElementById('tagInput');
+
+  return {
+    format: EXPORT_FORMAT,
+    exportedAt: nowISO(),
+    layout: serialize(),
+    templates: safeTemplatesForExport(readTemplates()),
+    uiState: {
+      currentTemplateId: currentTemplateId || '',
+      selectedCategory: catSel ? (catSel.value || '') : '',
+      selectedForm: formSel ? (formSel.value || '') : '',
+      tagInput: tagInp ? (tagInp.value || '') : '',
+      tagReadMode: tagReadMode || ''
+    }
+  };
+}
+
+function applyImportUiState(uiState){
+  if(!uiState || typeof uiState !== 'object') return;
+
+  const tagInp = document.getElementById('tagInput');
+  if(tagInp && typeof uiState.tagInput === 'string') tagInp.value = uiState.tagInput;
+
+  const catSel = document.getElementById('tplCategory');
+  const formSel = document.getElementById('tplForm');
+
+  if(catSel && typeof uiState.selectedCategory === 'string'){
+    catSel.value = uiState.selectedCategory;
+  }
+
+  refreshTemplateUI(true);
+
+  if(formSel && typeof uiState.selectedForm === 'string'){
+    formSel.value = uiState.selectedForm;
+  }
+
+  if(typeof uiState.currentTemplateId === 'string'){
+    currentTemplateId = uiState.currentTemplateId || null;
+  }
+
+  if(typeof uiState.tagReadMode === 'string'){
+    tagReadMode = uiState.tagReadMode || null;
+  }
+
+  updateTemplateMeta();
+}
+
+function loadLayoutCore(layout){
+  const data = layout;
+
+  if(!data || typeof data !== 'object'){
+    alert('Datos inválidos.');
+    return;
+  }
+
+  if(data.theme){
+    setVar('--border', data.theme.border || '#000');
+    setVar('--header-bg', data.theme.headerBg || '#fff');
+    setVar('--header-text', data.theme.headerText || '#000');
+    setVar('--section-bg', data.theme.sectionBg || '#e6e6e6');
+    setVar('--section-text', data.theme.sectionText || '#000');
+    setVar('--page-bg', data.theme.pageBg || '#fff');
+
+    const setPicker = (id, val)=>{
+      const el = document.getElementById(id);
+      if(el && val) el.value = val;
+    };
+    setPicker('clrBorder', data.theme.border || '#000000');
+    setPicker('clrHeaderBg', data.theme.headerBg || '#ffffff');
+    setPicker('clrHeaderText', data.theme.headerText || '#000000');
+    setPicker('clrSectionBg', data.theme.sectionBg || '#e6e6e6');
+    setPicker('clrSectionText', data.theme.sectionText || '#000000');
+    setPicker('clrPageBg', data.theme.pageBg || '#ffffff');
+  }
+
+  if(data.header){
+    document.getElementById('hdrTitle').value = data.header.title || '';
+    document.getElementById('hdrSubtitle').value = data.header.subtitle || '';
+    lastEditedISO = data.header.lastEdited || nowISO();
+    updateLastEditedUI();
+    applyHeaderText(false);
+    applyFixedLogo();
+  } else {
+    lastEditedISO = nowISO();
+    updateLastEditedUI();
+    applyFixedLogo();
+  }
+
+  const page = document.getElementById('capture');
+  [...page.querySelectorAll('.field')].forEach(f => f.remove());
+
+  (data.fields || []).forEach(d=>{
+    const field = document.createElement('div');
+    field.className = 'field';
+    field.dataset.type = d.type;
+    field.dataset.title = d.title || '';
+    if(d.config) field.dataset.config = JSON.stringify(d.config);
+
+    if(d.type === 'text'){
+      field.innerHTML = fieldHeadHTML(d.title || 'Texto') + `
         <div class="field-body textline">
-          <input type="text" value="">
+          <input type="text" value="${escapeAttr(d.value || '')}">
         </div>`;
     }
 
-    if(type === 'radio'){
-      field.dataset.title = 'Selección';
-      field.dataset.config = JSON.stringify({options:["Bien","Mal"]});
-      const name = 'r' + (radioCounter++);
-      field.innerHTML = fieldHeadHTML('Selección') + `
+    if(d.type === 'radio'){
+      const cfg = d.config || {};
+      const options = cfg.options || ["Bien","Mal"];
+      const name = d.name || ('r' + (radioCounter++));
+      field.dataset.config = JSON.stringify(cfg);
+      field.innerHTML = fieldHeadHTML(d.title || 'Selección') + `
         <div class="field-body" ondblclick="editRadioOptions(this)">
           <div class="opts">
-            <label><input type="radio" name="${name}"> Bien</label>
-            <label><input type="radio" name="${name}"> Mal</label>
+            ${options.map(o=>{
+              const checked = (d.selected || '') === o ? 'checked' : '';
+              return `<label><input type="radio" name="${name}" ${checked}> ${escapeHTML(o)}</label>`;
+            }).join('')}
           </div>
-          <textarea class="autogrow" placeholder="Observaciones"></textarea>
+          <textarea class="autogrow" placeholder="Observaciones">${escapeHTML(d.obs || '')}</textarea>
         </div>`;
     }
 
-    if(type === 'photos'){
-      field.dataset.title = 'Imagenes';
-      field.innerHTML = fieldHeadHTML('Imagenes') + `
+    if(d.type === 'photos'){
+      field.innerHTML = fieldHeadHTML(d.title || 'Imagenes') + `
         <div class="field-body">
           <input type="file" multiple accept="image/*" onchange="previewImages(this)">
           <div class="photos"></div>
@@ -1597,683 +2021,270 @@ window.addEventListener('unhandledrejection', (e)=>__showGlobalErr('Promesa rech
     }
 
     page.appendChild(field);
-    refreshAutoGrow();
-    touchEdited();
-  }
 
-  function removeField(btn){
-    btn.closest('.field').remove();
-    touchEdited();
-  }
-
-  function moveUp(btn){
-    const field = btn.closest('.field');
-    const prev = field.previousElementSibling;
-    if(prev && !prev.classList.contains('doc-header')){
-      field.parentNode.insertBefore(field, prev);
-      touchEdited();
-    }
-  }
-
-  function moveDown(btn){
-    const field = btn.closest('.field');
-    const next = field.nextElementSibling;
-    if(next){
-      field.parentNode.insertBefore(next, field);
-      touchEdited();
-    }
-  }
-
-  function editTitle(el){
-    const field = el.closest('.field');
-    const current = el.textContent.trim();
-    const val = prompt('Título del bloque:', current);
-    if(val === null) return;
-    el.textContent = val;
-    field.dataset.title = val;
-    touchEdited();
-  }
-
-  function editRadioOptions(body){
-    const field = body.closest('.field');
-    if(!field || field.dataset.type !== 'radio') return;
-
-    const cfg = safeJSON(field.dataset.config);
-    const current = (cfg.options || ["Bien","Mal"]).join(', ');
-    const val = prompt('Opciones separadas por coma:', current);
-    if(val === null) return;
-
-    const opts = val.split(',').map(s=>s.trim()).filter(Boolean);
-    cfg.options = opts.length ? opts : ["Bien","Mal"];
-    field.dataset.config = JSON.stringify(cfg);
-
-    const name = body.querySelector('input[type="radio"]')?.name || ('r' + (radioCounter++));
-    const wrap = body.querySelector('.opts');
-    wrap.innerHTML = cfg.options.map(o =>
-      `<label><input type="radio" name="${name}"> ${escapeHTML(o)}</label>`
-    ).join('');
-    touchEdited();
-  }
-
-  function previewImages(input){
-    const grid = input.closest('.field-body').querySelector('.photos');
-    grid.innerHTML = '';
-    touchEdited();
-    [...input.files].forEach(file=>{
-      const reader = new FileReader();
-      reader.onload = e=>{
+    if(d.type === 'photos' && Array.isArray(d.images)){
+      const grid = field.querySelector('.photos');
+      d.images.forEach(src=>{
         const img = document.createElement('img');
-        img.src = e.target.result;
+        img.src = src;
         grid.appendChild(img);
-      };
-      reader.readAsDataURL(file);
-    });
-  }
-
-  /* ===== save / load JSON ===== */
-  function getTheme(){
-    const styles = getComputedStyle(document.documentElement);
-    return {
-      border: styles.getPropertyValue('--border').trim(),
-      headerBg: styles.getPropertyValue('--header-bg').trim(),
-      headerText: styles.getPropertyValue('--header-text').trim(),
-      sectionBg: styles.getPropertyValue('--section-bg').trim(),
-      sectionText: styles.getPropertyValue('--section-text').trim(),
-      pageBg: styles.getPropertyValue('--page-bg').trim()
-    };
-  }
-
-  function serialize(){
-    const page = document.getElementById('capture');
-    const logoBox = document.getElementById('logoBox');
-
-    const header = {
-      title: document.getElementById('hdrTitle').value,
-      subtitle: document.getElementById('hdrSubtitle').value,
-      logo: FIXED_LOGO_URL,
-      lastEdited: lastEditedISO
-    };
-
-    if(logoBox) logoBox.dataset.logo = FIXED_LOGO_URL;
-
-    const fields = [...page.querySelectorAll('.field')].map(f=>{
-      const type = f.dataset.type || 'text';
-      const title = f.querySelector('.title')?.textContent?.trim() || '';
-      const config = safeJSON(f.dataset.config);
-
-      const out = { type, title, config };
-
-      if(type === 'text'){
-        out.value = f.querySelector('input[type="text"]')?.value ?? '';
-      }
-      if(type === 'radio'){
-        const radios = [...f.querySelectorAll('input[type="radio"]')];
-        const checked = radios.find(r=>r.checked);
-        out.selected = checked ? checked.parentElement.textContent.trim() : '';
-        out.name = radios[0]?.name || '';
-        out.obs = f.querySelector('textarea')?.value ?? '';
-      }
-      if(type === 'photos'){
-        out.images = [...f.querySelectorAll('.photos img')].map(img=>img.src);
-      }
-      return out;
-    });
-
-    return { header, theme: getTheme(), fields };
-  }
-
-  function safeTemplatesForExport(arr){
-    if(!Array.isArray(arr)) return [];
-    return arr
-      .filter(t => t && typeof t === 'object')
-      .map(t => ({
-        id: String(t.id || ''),
-        name: String(t.name || ''),
-        category: String(t.category || ''),
-        code: String(t.code || ''),
-        createdAt: t.createdAt ? String(t.createdAt) : '',
-        updatedAt: t.updatedAt ? String(t.updatedAt) : '',
-        data: (t.data && typeof t.data === 'object') ? t.data : null
-      }))
-      .filter(t => t.id && t.name && t.category && t.data);
-  }
-
-  function serializeExport(){
-    const catSel = document.getElementById('tplCategory');
-    const formSel = document.getElementById('tplForm');
-    const tagInp = document.getElementById('tagInput');
-
-    return {
-      format: EXPORT_FORMAT,
-      exportedAt: nowISO(),
-      layout: serialize(),
-      templates: safeTemplatesForExport(readTemplates()),
-      uiState: {
-        currentTemplateId: currentTemplateId || '',
-        selectedCategory: catSel ? (catSel.value || '') : '',
-        selectedForm: formSel ? (formSel.value || '') : '',
-        tagInput: tagInp ? (tagInp.value || '') : '',
-        tagReadMode: tagReadMode || ''
-      }
-    };
-  }
-
-  function applyImportUiState(uiState){
-    if(!uiState || typeof uiState !== 'object') return;
-
-    const tagInp = document.getElementById('tagInput');
-    if(tagInp && typeof uiState.tagInput === 'string') tagInp.value = uiState.tagInput;
-
-    const catSel = document.getElementById('tplCategory');
-    const formSel = document.getElementById('tplForm');
-
-    if(catSel && typeof uiState.selectedCategory === 'string'){
-      catSel.value = uiState.selectedCategory;
-    }
-
-    refreshTemplateUI(true);
-
-    if(formSel && typeof uiState.selectedForm === 'string'){
-      formSel.value = uiState.selectedForm;
-    }
-
-    if(typeof uiState.currentTemplateId === 'string'){
-      currentTemplateId = uiState.currentTemplateId || null;
-    }
-
-    if(typeof uiState.tagReadMode === 'string'){
-      tagReadMode = uiState.tagReadMode || null;
-    }
-
-    updateTemplateMeta();
-  }
-
-  function saveLayout(){
-    const data = serializeExport();
-    const blob = new Blob([JSON.stringify(data, null, 2)], {type:'application/json'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'informe_layout.json';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }
-
-  function loadLayout(){
-    const inp = document.createElement('input');
-    inp.type = 'file';
-    inp.accept = 'application/json';
-    inp.onchange = async () => {
-      const file = inp.files?.[0];
-      if(!file) return;
-      const text = await file.text();
-      let data;
-      try{ data = JSON.parse(text); }catch(e){ alert('JSON inválido'); return; }
-      loadLayoutFromData(data);
-    };
-    inp.click();
-  }
-
-  async function clearLayout(){
-    const ok = confirm(
-      '⚠️ REINICIO COMPLETO\n\n' +
-      'Esto dejará la página como si fuese la primera vez que se abre:\n' +
-      '• Elimina TODAS las plantillas guardadas\n' +
-      '• Borra el formulario actual, campos, imágenes, selecciones y textos\n' +
-      '• Restaura colores/formatos y cabecera por defecto\n' +
-      '• Resetea TAG/NFC y selecciones de plantilla\n\n' +
-      'Esta acción NO se puede deshacer.\n\n' +
-      '¿Continuar?'
-    );
-    if(!ok) return;
-
-    // Detener NFC y limpiar estado TAG
-    stopWebNfcScan();
-    tagReadMode = null;
-
-    // Borrar plantillas persistentes (Firestore)
-    if(cloudReady()){
-      try{
-        await cloudDeleteAllTemplates();
-        await loadTemplatesCache();
-      }catch(e){
-        showCloudError(e);
-        // Continuar con el resto igualmente
-        templatesCache = [];
-      }
-    }else{
-      templatesCache = [];
-    }
-
-    currentTemplateId = null;
-
-    // Limpiar selects de plantillas
-    const catSel = document.getElementById('tplCategory');
-    const formSel = document.getElementById('tplForm');
-    if(catSel) catSel.value = '';
-    if(formSel) formSel.value = '';
-
-    // Limpiar TAG input y estado
-    const tagInp = document.getElementById('tagInput');
-    if(tagInp) tagInp.value = '';
-    setTagStatus('');
-
-    // Restaurar tema por defecto (CSS vars)
-    setVar('--border', DEFAULTS.theme.border);
-    setVar('--header-bg', DEFAULTS.theme.headerBg);
-    setVar('--header-text', DEFAULTS.theme.headerText);
-    setVar('--section-bg', DEFAULTS.theme.sectionBg);
-    setVar('--section-text', DEFAULTS.theme.sectionText);
-    setVar('--page-bg', DEFAULTS.theme.pageBg);
-
-    // Restaurar pickers de color (para que coincidan con el tema)
-    const setPicker = (id, val)=>{
-      const el = document.getElementById(id);
-      if(el) el.value = val;
-    };
-    setPicker('clrBorder', DEFAULTS.theme.border);
-    setPicker('clrHeaderBg', DEFAULTS.theme.headerBg);
-    setPicker('clrHeaderText', DEFAULTS.theme.headerText);
-    setPicker('clrSectionBg', DEFAULTS.theme.sectionBg);
-    setPicker('clrSectionText', DEFAULTS.theme.sectionText);
-    setPicker('clrPageBg', DEFAULTS.theme.pageBg);
-
-    // Restaurar cabecera por defecto
-    const hdrTitle = document.getElementById('hdrTitle');
-    const hdrSubtitle = document.getElementById('hdrSubtitle');
-    if(hdrTitle) hdrTitle.value = DEFAULTS.hdrTitle;
-    if(hdrSubtitle) hdrSubtitle.value = DEFAULTS.hdrSubtitle;
-
-    // Restaurar contenido de la página (campos iniciales, como al abrir)
-    snapshotInitialState();
-    const page = document.getElementById('capture');
-    if(page && INITIAL_CAPTURE_HTML !== null){
-      page.innerHTML = INITIAL_CAPTURE_HTML;
-    }
-
-    // Reset contadores/fechas
-    radioCounter = 1;
-    lastEditedISO = nowISO();
-    updateLastEditedUI();
-
-    // Volver a aplicar cabecera y logo fijo
-    applyFixedLogo();
-    applyHeaderText(false);
-
-    // Refrescar UI de plantillas como vacío
-    refreshTemplateUI(false);
-    updateTemplateMeta();
-
-    refreshAutoGrow();
-    touchEdited();
-  }
-
-  function loadLayoutCore(layout){
-    const data = layout;
-
-    if(!data || typeof data !== 'object'){
-      alert('Datos inválidos.');
-      return;
-    }
-
-    if(data.theme){
-      setVar('--border', data.theme.border || '#000');
-      setVar('--header-bg', data.theme.headerBg || '#fff');
-      setVar('--header-text', data.theme.headerText || '#000');
-      setVar('--section-bg', data.theme.sectionBg || '#e6e6e6');
-      setVar('--section-text', data.theme.sectionText || '#000');
-      setVar('--page-bg', data.theme.pageBg || '#fff');
-
-      const setPicker = (id, val)=>{
-        const el = document.getElementById(id);
-        if(el && val) el.value = val;
-      };
-      setPicker('clrBorder', data.theme.border || '#000000');
-      setPicker('clrHeaderBg', data.theme.headerBg || '#ffffff');
-      setPicker('clrHeaderText', data.theme.headerText || '#000000');
-      setPicker('clrSectionBg', data.theme.sectionBg || '#e6e6e6');
-      setPicker('clrSectionText', data.theme.sectionText || '#000000');
-      setPicker('clrPageBg', data.theme.pageBg || '#ffffff');
-    }
-
-    if(data.header){
-      document.getElementById('hdrTitle').value = data.header.title || '';
-      document.getElementById('hdrSubtitle').value = data.header.subtitle || '';
-      lastEditedISO = data.header.lastEdited || nowISO();
-      updateLastEditedUI();
-      applyHeaderText(false);
-      applyFixedLogo();
-    } else {
-      lastEditedISO = nowISO();
-      updateLastEditedUI();
-      applyFixedLogo();
-    }
-
-    const page = document.getElementById('capture');
-    [...page.querySelectorAll('.field')].forEach(f => f.remove());
-
-    (data.fields || []).forEach(d=>{
-      const field = document.createElement('div');
-      field.className = 'field';
-      field.dataset.type = d.type;
-      field.dataset.title = d.title || '';
-      if(d.config) field.dataset.config = JSON.stringify(d.config);
-
-      if(d.type === 'text'){
-        field.innerHTML = fieldHeadHTML(d.title || 'Texto') + `
-          <div class="field-body textline">
-            <input type="text" value="${escapeAttr(d.value || '')}">
-          </div>`;
-      }
-
-      if(d.type === 'radio'){
-        const cfg = d.config || {};
-        const options = cfg.options || ["Bien","Mal"];
-        const name = d.name || ('r' + (radioCounter++));
-        field.dataset.config = JSON.stringify(cfg);
-        field.innerHTML = fieldHeadHTML(d.title || 'Selección') + `
-          <div class="field-body" ondblclick="editRadioOptions(this)">
-            <div class="opts">
-              ${options.map(o=>{
-                const checked = (d.selected || '') === o ? 'checked' : '';
-                return `<label><input type="radio" name="${name}" ${checked}> ${escapeHTML(o)}</label>`;
-              }).join('')}
-            </div>
-            <textarea class="autogrow" placeholder="Observaciones">${escapeHTML(d.obs || '')}</textarea>
-          </div>`;
-      }
-
-      if(d.type === 'photos'){
-        field.innerHTML = fieldHeadHTML(d.title || 'Imagenes') + `
-          <div class="field-body">
-            <input type="file" multiple accept="image/*" onchange="previewImages(this)">
-            <div class="photos"></div>
-          </div>`;
-      }
-
-      page.appendChild(field);
-
-      if(d.type === 'photos' && Array.isArray(d.images)){
-        const grid = field.querySelector('.photos');
-        d.images.forEach(src=>{
-          const img = document.createElement('img');
-          img.src = src;
-          grid.appendChild(img);
-        });
-      }
-    });
-
-    refreshAutoGrow();
-  }
-
-  function loadLayoutFromData(data){
-    if(!data || typeof data !== 'object'){
-      alert('Datos inválidos.');
-      return;
-    }
-
-    // NUEVO FORMATO: incluye plantillas + layout + estado
-    if((data.format === EXPORT_FORMAT) && data.layout && typeof data.layout === 'object'){
-      // En esta versión, el JSON puede incluir plantillas como backup/transferencia,
-      // pero la persistencia principal es Firestore. Se permite importar si el usuario quiere.
-      const incomingTemplates = safeTemplatesForExport(data.templates || []);
-
-      // Si hay plantillas en el JSON y Firestore está listo, preguntar si importarlas al cloud
-      if(incomingTemplates.length && cloudReady()){
-        let shouldReplace = true;
-        if(readTemplates().length){
-          shouldReplace = confirm(
-            'Este JSON incluye PLANTILLAS.\n\n' +
-            '¿Quieres importar y REEMPLAZAR las plantillas actuales en la nube por las del archivo?\n\n' +
-            'Aceptar = reemplazar (en Firestore).\nCancelar = mantener las actuales.'
-          );
-        }
-        if(shouldReplace){
-          (async ()=>{
-            try{
-              await cloudDeleteAllTemplates();
-              // escribir una a una
-              for(const t of incomingTemplates){
-                await cloudUpsertTemplate(t);
-              }
-              await loadTemplatesCache();
-              refreshTemplateUI(false);
-            }catch(e){
-              showCloudError(e);
-            }
-          })();
-        }
-      }else if(incomingTemplates.length && !cloudReady()){
-        // si no hay cloud, solo usarlo como "vista" (no persistente)
-        templatesCache = incomingTemplates;
-        refreshTemplateUI(false);
-      }
-
-      currentTemplateId = null;
-      loadLayoutCore(data.layout);
-
-      if(data.uiState) applyImportUiState(data.uiState);
-
-      // Si tras importar el currentTemplateId ya no existe, limpiarlo
-      if(currentTemplateId && !tplById(currentTemplateId)){
-        currentTemplateId = null;
-        updateTemplateMeta();
-      }
-
-      touchEdited();
-      return;
-    }
-
-    // FORMATO LEGACY: solo layout
-    loadLayoutCore(data);
-    currentTemplateId = null;
-    updateTemplateMeta();
-    touchEdited();
-  }
-
-  /* ===== Export helpers (PDF + JSON juntos) ===== */
-  function pad2(n){ return String(n).padStart(2,'0'); }
-  function exportStamp(d=new Date()){
-    const y = d.getFullYear();
-    const m = pad2(d.getMonth()+1);
-    const da = pad2(d.getDate());
-    const h = pad2(d.getHours());
-    const mi = pad2(d.getMinutes());
-    const s = pad2(d.getSeconds());
-    return `${y}${m}${da}_${h}${mi}${s}`;
-  }
-
-  function downloadBlob(blob, filename){
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(()=>URL.revokeObjectURL(url), 1000);
-  }
-
-  async function writeFileToDir(dirHandle, filename, blob){
-    const fileHandle = await dirHandle.getFileHandle(filename, { create:true });
-    const writable = await fileHandle.createWritable();
-    await writable.write(blob);
-    await writable.close();
-  }
-
-  async function savePdfAndJsonTogether({pdfBlob, jsonBlob, stamp}){
-    const pdfName = `informe_A4_sin_cortes_${stamp}.pdf`;
-    const jsonName = `BBDDINS_${stamp}.json`;
-
-    if('showDirectoryPicker' in window){
-      try{
-        const dirHandle = await window.showDirectoryPicker({ mode:'readwrite' });
-        await writeFileToDir(dirHandle, pdfName, pdfBlob);
-        await writeFileToDir(dirHandle, jsonName, jsonBlob);
-        return { ok:true, method:'fs', pdfName, jsonName };
-      }catch(e){
-      }
-    }
-
-    downloadBlob(pdfBlob, pdfName);
-    setTimeout(()=>downloadBlob(jsonBlob, jsonName), 250);
-    return { ok:true, method:'download', pdfName, jsonName };
-  }
-
-  /* ===== PDF export WITHOUT cutting fields ===== */
-  async function exportPDFNoCut(){
-    refreshAutoGrow();
-    applyFixedLogo();
-
-    const stamp = exportStamp(new Date());
-    const exportData = serializeExport();
-    const jsonBlob = new Blob([JSON.stringify(exportData, null, 2)], { type:'application/json' });
-
-    const { jsPDF } = window.jspdf;
-    const pdf = new jsPDF({ orientation:'p', unit:'mm', format:'a4' });
-
-    const pageW = 210;
-    const pageH = 297;
-    const margin = 10;
-    const contentW = pageW - margin*2;
-    const contentH = pageH - margin*2;
-
-    document.body.classList.add('exporting');
-
-    async function renderEl(element){
-      return await html2canvas(element, {
-        scale: 2,
-        backgroundColor: '#ffffff',
-        useCORS: true,
-        scrollX: 0,
-        scrollY: -window.scrollY,
-        onclone: (doc)=>{
-          const cap = doc.getElementById('capture');
-          if(cap){ cap.style.boxShadow = 'none'; cap.style.margin = '0'; }
-          doc.querySelectorAll('.actions').forEach(a => a.style.display = 'none');
-        }
       });
     }
+  });
 
-    try{
-      const header = document.getElementById('docHeader');
-      const fields = [...document.querySelectorAll('#capture .field')];
-      const blocks = [header, ...fields];
+  refreshAutoGrow();
+}
 
-      let cursorY = margin;
-
-      for(const block of blocks){
-        const canvas = await renderEl(block);
-        const imgData = canvas.toDataURL('image/jpeg', 0.95);
-
-        let blockWmm = contentW;
-        let blockHmm = (canvas.height * blockWmm) / canvas.width;
-
-        if(blockHmm > contentH){
-          const scaleFactor = contentH / blockHmm;
-          blockWmm = blockWmm * scaleFactor;
-          blockHmm = contentH;
-        }
-
-        if(cursorY + blockHmm > (pageH - margin)){
-          pdf.addPage();
-          cursorY = margin;
-        }
-
-        const x = margin + (contentW - blockWmm) / 2;
-        pdf.addImage(imgData, 'JPEG', x, cursorY, blockWmm, blockHmm);
-        cursorY += blockHmm + 2;
-      }
-
-      const pdfBlob = pdf.output('blob');
-
-      await savePdfAndJsonTogether({ pdfBlob, jsonBlob, stamp });
-    }finally{
-      document.body.classList.remove('exporting');
-    }
+function loadLayoutFromData(data){
+  if(!data || typeof data !== 'object'){
+    alert('Datos inválidos.');
+    return;
   }
 
-  document.addEventListener('input', (e)=>{
-    const cap = document.getElementById('capture');
-    if(!cap) return;
-    if(cap.contains(e.target) && (e.target.matches('input, textarea, select'))){
-      touchEdited();
-    }
-  });
-  document.addEventListener('change', (e)=>{
-    const cap = document.getElementById('capture');
-    if(!cap) return;
-    if(cap.contains(e.target) && (e.target.matches('input, textarea, select'))){
-      touchEdited();
-    }
-  });
+  if((data.format === EXPORT_FORMAT) && data.layout && typeof data.layout === 'object'){
+    const incomingTemplates = safeTemplatesForExport(data.templates || []);
 
-  /* ===== TAG input behavior (Enter) ===== */
-  document.addEventListener('keydown', async (e)=>{
-    const inp = document.getElementById('tagInput');
-    if(!inp) return;
-    if(e.target !== inp) return;
-
-    if(e.key === 'Enter'){
-      e.preventDefault();
-      const code = normalizeCode(inp.value || '');
-      if(!code) return;
-
-      if(tagReadMode === 'goto'){
-        gotoByCode(code);
-      }else if(tagReadMode === 'save'){
-        setTagStatus(`<b>Código:</b> ${escapeHTML(code)} (se usará como sugerencia al guardar)`);
-      }else{
-        const t = await tplByCode(code);
-        if(t) gotoByCode(code);
+    if(incomingTemplates.length && cloudReady()){
+      let shouldReplace = true;
+      if(readTemplates().length){
+        shouldReplace = confirm(
+          'Este JSON incluye PLANTILLAS.\n\n' +
+          '¿Quieres importar y REEMPLAZAR las plantillas actuales en la nube por las del archivo?\n\n' +
+          'Aceptar = reemplazar (en Firestore).\nCancelar = mantener las actuales.'
+        );
       }
-    }
-  });
-
-  /* ===== init ===== */
-  (async ()=>{
-    lastEditedISO = nowISO();
-    updateLastEditedUI();
-    applyFixedLogo();
-    snapshotInitialState();
-    applyHeaderText();
-    refreshAutoGrow();
-    setTagStatus('');
-    setupAutoFocusForNfc();
-
-    const ok = initFirebase();
-    if(ok){
-      try{
-        await cloudPing();
-        await loadTemplatesCache();
-        refreshTemplateUI(false);
-        setTagStatus('<b>Nube:</b> conectada (Firestore).');
-      }catch(e){
-        templatesCache = [];
-        refreshTemplateUI(false);
-        setTagStatus('<b>Nube:</b> sin conexión o sin permisos (Firestore). Se puede seguir editando, pero no se podrán guardar/cargar plantillas.');
-        console.error(e);
+      if(shouldReplace){
+        (async ()=>{
+          try{
+            await cloudDeleteAllTemplates();
+            for(const t of incomingTemplates){
+              await cloudUpsertTemplate(t);
+            }
+            await loadTemplatesCache();
+            refreshTemplateUI(false);
+          }catch(e){
+            showCloudError(e);
+          }
+        })();
       }
+    }else if(incomingTemplates.length && !cloudReady()){
+      templatesCache = incomingTemplates;
+      refreshTemplateUI(false);
+    }
+
+    currentTemplateId = null;
+    loadLayoutCore(data.layout);
+
+    if(data.uiState) applyImportUiState(data.uiState);
+
+    if(currentTemplateId && !tplById(currentTemplateId)){
+      currentTemplateId = null;
+      updateTemplateMeta();
+    }
+
+    touchEdited();
+    return;
+  }
+
+  loadLayoutCore(data);
+  currentTemplateId = null;
+  updateTemplateMeta();
+  touchEdited();
+}
+
+function pad2(n){ return String(n).padStart(2,'0'); }
+function exportStamp(d=new Date()){
+  const y = d.getFullYear();
+  const m = pad2(d.getMonth()+1);
+  const da = pad2(d.getDate());
+  const h = pad2(d.getHours());
+  const mi = pad2(d.getMinutes());
+  const s = pad2(d.getSeconds());
+  return `${y}${m}${da}_${h}${mi}${s}`;
+}
+
+function downloadBlob(blob, filename){
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url), 1000);
+}
+
+async function writeFileToDir(dirHandle, filename, blob){
+  const fileHandle = await dirHandle.getFileHandle(filename, { create:true });
+  const writable = await fileHandle.createWritable();
+  await writable.write(blob);
+  await writable.close();
+}
+
+async function savePdfAndJsonTogether({pdfBlob, jsonBlob, stamp}){
+  const pdfName = `informe_A4_sin_cortes_${stamp}.pdf`;
+  const jsonName = `BBDDINS_${stamp}.json`;
+
+  if('showDirectoryPicker' in window){
+    try{
+      const dirHandle = await window.showDirectoryPicker({ mode:'readwrite' });
+      await writeFileToDir(dirHandle, pdfName, pdfBlob);
+      await writeFileToDir(dirHandle, jsonName, jsonBlob);
+      return { ok:true, method:'fs', pdfName, jsonName };
+    }catch(_){}
+  }
+
+  downloadBlob(pdfBlob, pdfName);
+  setTimeout(()=>downloadBlob(jsonBlob, jsonName), 250);
+  return { ok:true, method:'download', pdfName, jsonName };
+}
+
+async function exportPDFNoCut(){
+  refreshAutoGrow();
+  applyFixedLogo();
+
+  const stamp = exportStamp(new Date());
+  const exportData = serializeExport();
+  const jsonBlob = new Blob([JSON.stringify(exportData, null, 2)], { type:'application/json' });
+
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF({ orientation:'p', unit:'mm', format:'a4' });
+
+  const pageW = 210;
+  const pageH = 297;
+  const margin = 10;
+  const contentW = pageW - margin*2;
+  const contentH = pageH - margin*2;
+
+  document.body.classList.add('exporting');
+
+  async function renderEl(element){
+    return await html2canvas(element, {
+      scale: 2,
+      backgroundColor: '#ffffff',
+      useCORS: true,
+      scrollX: 0,
+      scrollY: -window.scrollY,
+      onclone: (doc)=>{
+        const cap = doc.getElementById('capture');
+        if(cap){ cap.style.boxShadow = 'none'; cap.style.margin = '0'; }
+        doc.querySelectorAll('.actions').forEach(a => a.style.display = 'none');
+      }
+    });
+  }
+
+  try{
+    const header = document.getElementById('docHeader');
+    const fields = [...document.querySelectorAll('#capture .field')];
+    const blocks = [header, ...fields];
+
+    let cursorY = margin;
+
+    for(const block of blocks){
+      const canvas = await renderEl(block);
+      const imgData = canvas.toDataURL('image/jpeg', 0.95);
+
+      let blockWmm = contentW;
+      let blockHmm = (canvas.height * blockWmm) / canvas.width;
+
+      if(blockHmm > contentH){
+        const scaleFactor = contentH / blockHmm;
+        blockWmm = blockWmm * scaleFactor;
+        blockHmm = contentH;
+      }
+
+      if(cursorY + blockHmm > (pageH - margin)){
+        pdf.addPage();
+        cursorY = margin;
+      }
+
+      const x = margin + (contentW - blockWmm) / 2;
+      pdf.addImage(imgData, 'JPEG', x, cursorY, blockWmm, blockHmm);
+      cursorY += blockHmm + 2;
+    }
+
+    const pdfBlob = pdf.output('blob');
+    await savePdfAndJsonTogether({ pdfBlob, jsonBlob, stamp });
+  }finally{
+    document.body.classList.remove('exporting');
+  }
+}
+
+document.addEventListener('input', (e)=>{
+  const cap = document.getElementById('capture');
+  if(!cap) return;
+  if(cap.contains(e.target) && (e.target.matches('input, textarea, select'))){
+    touchEdited();
+  }
+});
+document.addEventListener('change', (e)=>{
+  const cap = document.getElementById('capture');
+  if(!cap) return;
+  if(cap.contains(e.target) && (e.target.matches('input, textarea, select'))){
+    touchEdited();
+  }
+});
+
+document.addEventListener('keydown', async (e)=>{
+  const inp = document.getElementById('tagInput');
+  if(!inp) return;
+  if(e.target !== inp) return;
+
+  if(e.key === 'Enter'){
+    e.preventDefault();
+    const code = normalizeCode(inp.value || '');
+    if(!code) return;
+
+    if(tagReadMode === 'goto'){
+      gotoByCode(code);
+    }else if(tagReadMode === 'save'){
+      setTagStatus(`<b>Código:</b> ${escapeHTML(code)} (se usará como sugerencia al guardar)`);
     }else{
+      const t = await tplByCode(code);
+      if(t) gotoByCode(code);
+    }
+  }
+});
+
+(async ()=>{
+  lastEditedISO = nowISO();
+  updateLastEditedUI();
+  applyFixedLogo();
+  snapshotInitialState();
+  applyHeaderText();
+  refreshAutoGrow();
+  setTagStatus('');
+  setupAutoFocusForNfc();
+
+  try{
+    ["alertEnabled","alertEveryDays","alertStartAt"].forEach(id=>{
+      const el = document.getElementById(id);
+      if(!el) return;
+      el.addEventListener("input", ()=>{ refreshAlertMeta(); touchEdited(); });
+      el.addEventListener("change", ()=>{ refreshAlertMeta(); touchEdited(); });
+    });
+    resetAlertControls();
+  }catch(_){}
+
+  const ok = initFirebase();
+  if(ok){
+    try{
+      await cloudPing();
+      await loadTemplatesCache();
+      refreshTemplateUI(false);
+      setTagStatus('<b>Nube:</b> conectada (Firestore).');
+    }catch(e){
       templatesCache = [];
       refreshTemplateUI(false);
-      setTagStatus('<b>Nube:</b> Firebase no inicializado. Revisa scripts/config.');
+      setTagStatus('<b>Nube:</b> sin conexión o sin permisos (Firestore). Se puede seguir editando, pero no se podrán guardar/cargar plantillas.');
+      console.error(e);
     }
-  })();
-
-// --- Bindings explícitos para botones inline (robustez) ---
-try{
-  window.saveTemplate = saveTemplate;
-  window.loadTemplate = loadTemplate;
-  window.deleteTemplate = deleteTemplate;
-  window.deleteAllTemplates = deleteAllTemplates;
-  window.findByCode = findByCode;
-  window.importJsonFiles = importJsonFiles;
-  window.exportJSON = exportJSON;
-}catch(e){ console.error(e); }
-
+  }else{
+    templatesCache = [];
+    refreshTemplateUI(false);
+    setTagStatus('<b>Nube:</b> Firebase no inicializado. Revisa scripts/config.');
+  }
+})();
 </script>
 </body>
 </html>
